@@ -11,6 +11,6 @@ package com.chatter.forumservice.util;
  * UPDATE
  * DELETE
  */
-public enum ServiceOperation {
+public enum ServiceOperations {
 	CREATE, RETRIEVE, UPDATE, DELETE
 }

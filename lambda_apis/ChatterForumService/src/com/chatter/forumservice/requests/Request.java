@@ -1,6 +1,6 @@
 package com.chatter.forumservice.requests;
 
-import com.chatter.forumservice.util.ServiceOperation;
+import com.chatter.forumservice.util.ServiceOperations;
 
 /**
  * Request
@@ -15,21 +15,21 @@ import com.chatter.forumservice.util.ServiceOperation;
  */
 public abstract class Request {
 
-	private ServiceOperation operation;
+	private ServiceOperations operation;
 	private Long reqDate;
 	
 	public Request() {}
 	
-	public Request(ServiceOperation operation, Long reqDate) {
+	public Request(ServiceOperations operation, Long reqDate) {
 		this.operation = operation;
 		this.reqDate = reqDate;
 	}
 	
-	public ServiceOperation getOperation() {
+	public ServiceOperations getOperation() {
 		return operation;
 	}
 	
-	public void setOperation(ServiceOperation operation) {
+	public void setOperation(ServiceOperations operation) {
 		this.operation = operation;
 	}
 	
