@@ -1,4 +1,4 @@
-package com.chatter.forumservice;
+package com.chatter.forumservice.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
