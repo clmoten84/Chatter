@@ -11,7 +11,8 @@ import com.chatter.forumservice.util.ServiceOperations;
  * Encapsulates service request data to create and save a new Chatter 
  * Forum object to the database.
  * 
- * 
+ * - createdBy (String): the id of the entity who created this Forum
+ * - title (String): title associated with this Forum
  *
  */
 public class CreateForumRequest extends Request{
