@@ -45,4 +45,5 @@ Thumbs.db
 # Directories
 /target/
 /properties/
+/env_props/
 /bin/

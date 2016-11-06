@@ -7,10 +7,13 @@ package com.chatter.forumservice.util;
  * Possible operations that this service can perform:
  * 
  * CREATE
- * RETRIEVE
+ * QUERY_BY_ID
+ * QUERY_BY_CREATOR
+ * QUERY_BY_TITLE
  * UPDATE
  * DELETE
  */
 public enum ServiceOperations {
-	CREATE, RETRIEVE, UPDATE, DELETE, ADD_COMMENT
+	CREATE, QUERY_BY_ID, QUERY_BY_CREATOR,
+	QUERY_BY_TITLE, UPDATE, DELETE, ADD_COMMENT
 }

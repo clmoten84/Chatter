@@ -20,7 +20,7 @@ public class RetrieveForumRequest extends Request{
 	public RetrieveForumRequest() { super(); }
 	
 	public RetrieveForumRequest(String forumId) {
-		super(ServiceOperations.RETRIEVE, new Date().getTime());
+		super(ServiceOperations.QUERY_BY_ID, new Date().getTime());
 		this.forumId = forumId;
 	}
 	
