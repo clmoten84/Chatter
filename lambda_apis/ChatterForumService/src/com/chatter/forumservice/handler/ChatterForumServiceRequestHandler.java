@@ -8,9 +8,16 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.chatter.forumservice.dao.ForumDAO;
 import com.chatter.forumservice.dao.ForumDAOImpl;
 import com.chatter.forumservice.exceptions.RequestValidationException;
+import com.chatter.forumservice.requests.AddCommentRequest;
 import com.chatter.forumservice.requests.CreateForumRequest;
+import com.chatter.forumservice.requests.DeleteForumRequest;
 import com.chatter.forumservice.requests.ForumServiceRequest;
+import com.chatter.forumservice.requests.QueryByCreatorRequest;
+import com.chatter.forumservice.requests.QueryByTitleRequest;
 import com.chatter.forumservice.requests.Request;
+import com.chatter.forumservice.requests.RetrieveForumRequest;
+import com.chatter.forumservice.requests.UpdateForumRequest;
+import com.chatter.forumservice.responses.ForumResultPage;
 import com.chatter.forumservice.responses.ForumServiceResponse;
 import com.chatter.forumservice.util.ServiceMessages;
 import com.chatter.forumservice.util.ServiceOperations;
@@ -22,70 +29,101 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
 	
     @Override
     public ForumServiceResponse<? extends Object> handleRequest(Object input, Context context) {
+    	LambdaLogger logger = context.getLogger();
+    	
         if(input != null) {
         	@SuppressWarnings("unchecked")
         	ForumServiceRequest<Request> req = (ForumServiceRequest<Request>) input;
         	Request reqData = req.getData();
         	ServiceOperations operation = reqData.getOperation();
         	
+        	//Define the response to be returned upon error conditions
+        	ForumServiceResponse<Void> response = new ForumServiceResponse<>();
+        	
         	try {
         		switch(operation) {
         			case CREATE:
         				return this.createForum(req, context);
         			case QUERY_BY_ID:
-        				break;
+        				return this.retrieveForumById(req, context);
         			case QUERY_BY_CREATOR:
-        				break;
+        				return this.queryByCreator(req, context);
         			case QUERY_BY_TITLE:
-        				break;
+        				return this.queryByTitle(req, context);
         			case UPDATE:
-        				break;
+        				return this.updateForum(req, context);
         			case ADD_COMMENT:
-        				break;
+        				return this.addCommentToForum(req, context);
         			case DELETE:
-        				break;
+        				return this.deleteForum(req, context);
         			default:
         				throw new UnsupportedOperationException("ERROR! The service "
         						+ "does not support operation: " + operation.toString());
         		}
         	}
         	catch (UnsupportedOperationException uoe) {
-        		ForumServiceResponse<Void> response = new ForumServiceResponse<>();
+        		// Set error response and return
         		response.setPayload(null);
         		response.setStatus(false);
         		response.setMessage(ServiceMessages.UNSUPPORTED_OPERATION.toString());
         		response.setExceptionThrown(true);
-        		response.setExceptionMessage(uoe.getMessage());
+        		
+        		String exceptionMessage = this.compileExceptionMessage(uoe);
+        		response.setExceptionMessage(exceptionMessage);
+        		logger.log(exceptionMessage);
+        		return response;
         	}
         	catch (RequestValidationException rve) {
-        		ForumServiceResponse<Void> response = new ForumServiceResponse<>();
+        		// Set error response and return
         		response.setPayload(null);
         		response.setStatus(false);
         		response.setMessage(ServiceMessages.OPERATION_FAILED.toString());
         		response.setExceptionThrown(true);
-        		response.setExceptionMessage(this.compileExceptionMessage(rve));
+        		
+        		String exceptionMessage = this.compileExceptionMessage(rve);
+        		response.setExceptionMessage(exceptionMessage);
+        		logger.log(exceptionMessage);
+        		return response;
         	}
         	catch (AmazonServiceException ase) {
-        		ForumServiceResponse<Void> response = new ForumServiceResponse<>();
+        		// Set error response and return
         		response.setPayload(null);
         		response.setStatus(false);
         		response.setMessage(ServiceMessages.OPERATION_FAILED.toString());
         		response.setExceptionThrown(true);
-        		response.setExceptionMessage(this.compileExceptionMessage(ase));
+        		
+        		String exceptionMessage = this.compileExceptionMessage(ase);
+        		response.setExceptionMessage(exceptionMessage);
+        		logger.log(exceptionMessage);
+        		return response;
         	}
         	catch (AmazonClientException ace) {
-        		ForumServiceResponse<Void> response = new ForumServiceResponse<>();
+        		// Set error response and return
         		response.setPayload(null);
         		response.setStatus(false);
         		response.setMessage(ServiceMessages.OPERATION_FAILED.toString());
         		response.setExceptionThrown(true);
-        		response.setExceptionMessage(this.compileExceptionMessage(ace));
+        		
+        		String exceptionMessage = this.compileExceptionMessage(ace);
+        		response.setExceptionMessage(exceptionMessage);
+        		logger.log(exceptionMessage);
+        		return response;
         	}
         }
         
         return null;
     }
     
+    /**
+     * Creates and saves a Chatter forum object in the DB
+     * @param input the request to process
+     * @param context the service context
+     * @return a ForumServiceResponse containing the created Chatter forum object
+     * 
+     * @throws RequestValidationException
+     * @throws AmazonServiceException
+     * @throws AmazonClientException
+     */
     public ForumServiceResponse<ChatterForum> createForum(ForumServiceRequest<Request> input,
     		Context context) throws RequestValidationException, AmazonServiceException,
     			AmazonClientException {
@@ -107,6 +145,195 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
     }
     
     /**
+     * Retrieves a Chatter forum object from the DB using the object's id
+     * @param input the request to process
+     * @param context lambda context object
+     * @return ForumServiceResponse
+     * 
+     * @throws RequestValidationException
+     * @throws AmazonServiceException
+     * @throws AmazonClientException
+     */
+    public ForumServiceResponse<ChatterForum> retrieveForumById(ForumServiceRequest<Request> input,
+    		Context context) throws RequestValidationException, AmazonServiceException,
+    			AmazonClientException {
+    	ForumServiceResponse<ChatterForum> response = new ForumServiceResponse<>();
+    	RetrieveForumRequest request = (RetrieveForumRequest) input.getData();
+    	
+    	//Log request info to context logger
+    	LambdaLogger logger = context.getLogger();
+    	logger.log(request.toString());
+    	
+    	ChatterForum forum = forumDao.retrieveForumById(request);
+    	response.setPayload(forum);
+    	response.setStatus(true);
+    	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
+    	return response;
+    }
+    
+    /**
+     * Updates a ChatterForum object
+     * @param input the request to process
+     * @param context lambda context object
+     * @return ForumServiceResponse
+     * 
+     * @throws RequestValidationException
+     * @throws AmazonServiceException
+     * @throws AmazonClientException
+     */
+    public ForumServiceResponse<ChatterForum> updateForum(ForumServiceRequest<Request> input,
+    		Context context) throws RequestValidationException, AmazonServiceException,
+    			AmazonClientException {
+    	ForumServiceResponse<ChatterForum> response = new ForumServiceResponse<>();
+    	UpdateForumRequest request = (UpdateForumRequest) input.getData();
+    	
+    	// Log request info to lambda logger
+    	LambdaLogger logger = context.getLogger();
+    	logger.log(request.toString());
+    	
+    	ChatterForum forum = forumDao.updateForum(request);
+    	response.setPayload(forum);
+    	response.setStatus(true);
+    	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
+    	return response;
+    }
+    
+    /**
+     * Updates a ChatterForum object by adding a new comment id to the 
+     * set of comment ids associated with forum.
+     * 
+     * @param input the request to process
+     * @param context lambda context object
+     * @return ForumServiceResponse
+     * 
+     * @throws RequestValidationException
+     * @throws AmazonServiceException
+     * @throws AmazonClientException
+     */
+    public ForumServiceResponse<ChatterForum> addCommentToForum(ForumServiceRequest<Request> input,
+    		Context context) throws RequestValidationException, AmazonServiceException,
+    			AmazonClientException {
+		ForumServiceResponse<ChatterForum> response = new ForumServiceResponse<>();
+		AddCommentRequest request = (AddCommentRequest) input.getData();
+		
+		// Log request info to lambda logger
+		LambdaLogger logger = context.getLogger();
+		logger.log(request.toString());
+		
+		ChatterForum forum = forumDao.addCommentToForum(request);
+		response.setPayload(forum);
+    	response.setStatus(true);
+    	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
+    	return response;
+	}
+    
+    /**
+     * Queries the ChatterForum DB table using the global secondary 
+     * index (createdBy). Results are returned in pages of 20. The
+     * result page also contains the last key evaluated so that subsequent
+     * results can be retrieved in another request.
+     * 
+     * @param input the request to process
+     * @param context lambda context object
+     * @return ForumServiceResponse
+     * 
+     * @throws RequestValidationException
+     * @throws AmazonServiceException
+     * @throws AmazonClientException
+     */
+    public ForumServiceResponse<ForumResultPage> queryByCreator(ForumServiceRequest<Request> input,
+    	Context context) throws RequestValidationException, AmazonServiceException,
+    		AmazonClientException {
+    	ForumServiceResponse<ForumResultPage> response = new ForumServiceResponse<>();
+    	QueryByCreatorRequest request = (QueryByCreatorRequest) input.getData();
+    	
+    	// Log request info to lambda logger
+    	LambdaLogger logger = context.getLogger();
+    	logger.log(request.toString());
+    	
+    	ForumResultPage forumResultPage = forumDao.queryByCreator(request);
+    	response.setPayload(forumResultPage);
+    	response.setStatus(true);
+    	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
+    	return response;
+	}
+    
+    /**
+     * Queries the ChatterForum DB table using the global secondary
+     * index (title). Results are returned in pages of 20. The result
+     * page also contains the last key evaluated so that subsequent
+     * results can be retrieved in another request.
+     * 
+     * @param input the request to process
+     * @param context lambda context object
+     * @return ForumServiceResponse
+     * 
+     * @throws RequestValidationException
+     * @throws AmazonServiceException
+     * @throws AmazonClientException
+     */
+    public ForumServiceResponse<ForumResultPage> queryByTitle(ForumServiceRequest<Request> input,
+    		Context context) throws RequestValidationException, AmazonServiceException,
+    			AmazonClientException {
+    	ForumServiceResponse<ForumResultPage> response = new ForumServiceResponse<>();
+    	QueryByTitleRequest request = (QueryByTitleRequest) input.getData();
+    	
+    	// Log request info to lambda logger
+    	LambdaLogger logger = context.getLogger();
+    	logger.log(request.toString());
+    	
+    	ForumResultPage forumResultPage = forumDao.queryByTitle(request);
+    	response.setPayload(forumResultPage);
+    	response.setStatus(true);
+    	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
+    	return response;
+    }
+    
+    /**
+     * Deletes the requested ChatterForum instance from the DB. 
+     * 
+     * @param input the request to process
+     * @param context lambda context object
+     * @return ForumServiceResponse
+     * 
+     * @throws RequestValidationException
+     * @throws AmazonServiceException
+     * @throws AmazonClientException
+     */
+    public ForumServiceResponse<Void> deleteForum(ForumServiceRequest<Request> input, 
+    		Context context) throws RequestValidationException, AmazonServiceException,
+    			AmazonClientException {
+    	ForumServiceResponse<Void> response = new ForumServiceResponse<>();
+    	DeleteForumRequest request = (DeleteForumRequest) input.getData();
+    	
+    	// Log request info to lambda logger
+    	LambdaLogger logger = context.getLogger();
+    	logger.log(request.toString());
+    	
+    	boolean opSuccess = forumDao.deleteForum(request);
+    	response.setPayload(null);
+    	response.setStatus(true);
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
+    	
+    	if(opSuccess) 
+    		response.setMessage(ServiceMessages.OPERATION_FAILED.toString());
+    	else
+    		response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	return response;
+    }
+    
+    /**
      * Compiles an exception message to add to response
  	 * when an exception is encountered in the service
  	 * handler. The exception message details the exception
@@ -116,7 +343,9 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
      */
     private String compileExceptionMessage(Exception ex) {
     	StringBuilder builder = new StringBuilder();
-    	builder.append("An Exception was caught in service handler:");
+    	builder.append("***** An Exception was caught in service handler *****");
+    	builder.append("Exception message: ").append(ex.getMessage());
+    	builder.append("Exception Details: ");
     	
     	for(StackTraceElement element : ex.getStackTrace()) {
     		builder.append("\n").append(element.toString());

@@ -63,7 +63,7 @@ public class RequestValidator {
 	 * @param req the request object to validate
 	 * @return
 	 */
-	public static boolean validateUUpdateForumRequest(UpdateForumRequest req) {
+	public static boolean validateUpdateForumRequest(UpdateForumRequest req) {
 		boolean validReq = true;
 		
 		if(req != null) {
@@ -125,6 +125,28 @@ public class RequestValidator {
 		
 		if(req != null) {
 			if(req.getTitle() == null || req.getTitle().isEmpty())
+				validReq = false;
+		}
+		else {
+			validReq = false;
+		}
+		
+		return validReq;
+	}
+	
+	/**
+	 * Validate a request to add a comment id to Forum object
+	 * @param req the request to validate
+	 * @return 
+	 */
+	public static boolean validateAddCommentRequest(AddCommentRequest req) {
+		boolean validReq = true;
+		
+		if (req != null) {
+			if (req.getForumId() == null || req.getForumId().isEmpty())
+				validReq = false;
+			
+			if (req.getCommentId() == null || req.getCommentId().isEmpty())
 				validReq = false;
 		}
 		else {

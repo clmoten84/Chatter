@@ -1,7 +1,5 @@
 package com.chatter.forumservice.dao;
 
-import java.util.List;
-
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.chatter.forumservice.exceptions.RequestValidationException;
@@ -12,6 +10,7 @@ import com.chatter.forumservice.requests.QueryByCreatorRequest;
 import com.chatter.forumservice.requests.QueryByTitleRequest;
 import com.chatter.forumservice.requests.RetrieveForumRequest;
 import com.chatter.forumservice.requests.UpdateForumRequest;
+import com.chatter.forumservice.responses.ForumResultPage;
 import com.chatter.model.ChatterForum;
 
 /**
@@ -74,9 +73,11 @@ public interface ForumDAO {
 	 * Delete a Chatter Forum instance from the database
 	 * 
 	 * @param req the request containing all the data necessary to delete
-	 * a Chatter Forum instance
+	 * a ChatterForum instance
+	 * 
+	 * @return a flag indicating operation success
 	 */
-	public void deleteForum(DeleteForumRequest req) throws 
+	public boolean deleteForum(DeleteForumRequest req) throws 
 		RequestValidationException, AmazonServiceException,
 		AmazonClientException;
 	
@@ -87,9 +88,9 @@ public interface ForumDAO {
 	 * @param req the request containing all the data necessary to perform
 	 * the query
 	 * 
-	 * @return a list of Chatter Forum objects 
+	 * @return a ForumResultPage object 
 	 */
-	public List<ChatterForum> queryByCreator(QueryByCreatorRequest req) throws
+	public ForumResultPage queryByCreator(QueryByCreatorRequest req) throws
 		RequestValidationException, AmazonServiceException,
 		AmazonClientException;
 	
@@ -100,9 +101,9 @@ public interface ForumDAO {
 	 * @param req the request containing all the data necessary to perform
 	 * the query
 	 * 
-	 * @return a list of Chatter Forum objects
+	 * @return a ForumResultPage object
 	 */
-	public List<ChatterForum> queryByTitle(QueryByTitleRequest req) throws 
+	public ForumResultPage queryByTitle(QueryByTitleRequest req) throws 
 		RequestValidationException, AmazonServiceException,
 		AmazonClientException;
 }

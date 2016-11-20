@@ -1,7 +1,9 @@
 package com.chatter.forumservice.requests;
 
 import java.util.Date;
+import java.util.Map;
 
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.chatter.forumservice.util.ServiceOperations;
 
 /**
@@ -17,12 +19,19 @@ import com.chatter.forumservice.util.ServiceOperations;
 public class QueryByCreatorRequest extends Request{
 
 	private String createdBy;
+	private Long timeStampFrom;
+	private Long timeStampTo;
+	private Map<String, AttributeValue> exclusiveStartKey;
 	
 	public QueryByCreatorRequest() { super(); }
 	
-	public QueryByCreatorRequest(String createdBy) {
+	public QueryByCreatorRequest(String createdBy, Map<String, AttributeValue> exclusiveStartKey,
+			Long timeStampFrom, Long timeStampTo) {
 		super(ServiceOperations.QUERY_BY_CREATOR, new Date().getTime());
 		this.createdBy = createdBy;
+		this.exclusiveStartKey = exclusiveStartKey;
+		this.timeStampFrom = timeStampFrom;
+		this.timeStampTo = timeStampTo;
 	}
 	
 	public String getCreatedBy() {
@@ -33,11 +42,37 @@ public class QueryByCreatorRequest extends Request{
 		this.createdBy = createdBy;
 	}
 	
+	public Map<String, AttributeValue> getExclusiveStartKey() {
+		return exclusiveStartKey;
+	}
+
+	public void setExclusiveStartKey(Map<String, AttributeValue> exclusiveStartKey) {
+		this.exclusiveStartKey = exclusiveStartKey;
+	}
+
+	public Long getTimeStampFrom() {
+		return timeStampFrom;
+	}
+
+	public void setTimeStampFrom(Long timeStampFrom) {
+		this.timeStampFrom = timeStampFrom;
+	}
+
+	public Long getTimeStampTo() {
+		return timeStampTo;
+	}
+
+	public void setTimeStampTo(Long timeStampTo) {
+		this.timeStampTo = timeStampTo;
+	}
+
 	@Override
 	public String toString() {
 		return new StringBuilder()
 			.append("***** Query By Creator request *****")
 			.append("created_by: ").append(this.createdBy)
+			.append("time_stamp_from: ").append(this.timeStampFrom)
+			.append("time_stamp_to: ").append(this.timeStampTo)
 			.toString();
 	}
 }
