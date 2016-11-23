@@ -10,7 +10,8 @@ public enum ServiceMessages {
 	
 	OPERATION_SUCCESS("Chatter forum service operation completed successfully!"),
 	OPERATION_FAILED("Chatter forum service operation failed!"),
-	UNSUPPORTED_OPERATION("Service received a request that contains an invalid operation!");
+	UNSUPPORTED_OPERATION("Service received a request that contains an invalid operation!"),
+	MISSING_OPERATION("Service received a request that is missing a required operation attribute!");
 	
 	private final String message;
 	

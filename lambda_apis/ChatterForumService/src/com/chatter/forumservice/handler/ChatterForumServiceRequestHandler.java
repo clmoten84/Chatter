@@ -7,6 +7,7 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.chatter.forumservice.dao.ForumDAO;
 import com.chatter.forumservice.dao.ForumDAOImpl;
+import com.chatter.forumservice.exceptions.MissingOperationException;
 import com.chatter.forumservice.exceptions.RequestValidationException;
 import com.chatter.forumservice.requests.AddCommentRequest;
 import com.chatter.forumservice.requests.CreateForumRequest;
@@ -35,31 +36,49 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
         	@SuppressWarnings("unchecked")
         	ForumServiceRequest<Request> req = (ForumServiceRequest<Request>) input;
         	Request reqData = req.getData();
-        	ServiceOperations operation = reqData.getOperation();
         	
         	//Define the response to be returned upon error conditions
         	ForumServiceResponse<Void> response = new ForumServiceResponse<>();
         	
         	try {
-        		switch(operation) {
-        			case CREATE:
-        				return this.createForum(req, context);
-        			case QUERY_BY_ID:
-        				return this.retrieveForumById(req, context);
-        			case QUERY_BY_CREATOR:
-        				return this.queryByCreator(req, context);
-        			case QUERY_BY_TITLE:
-        				return this.queryByTitle(req, context);
-        			case UPDATE:
-        				return this.updateForum(req, context);
-        			case ADD_COMMENT:
-        				return this.addCommentToForum(req, context);
-        			case DELETE:
-        				return this.deleteForum(req, context);
-        			default:
-        				throw new UnsupportedOperationException("ERROR! The service "
-        						+ "does not support operation: " + operation.toString());
+        		ServiceOperations operation = reqData.getOperation();
+        		if (operation != null) {
+	        		switch(operation) {
+	        			case CREATE:
+	        				return this.createForum(req, context);
+	        			case QUERY_BY_ID:
+	        				return this.retrieveForumById(req, context);
+	        			case QUERY_BY_CREATOR:
+	        				return this.queryByCreator(req, context);
+	        			case QUERY_BY_TITLE:
+	        				return this.queryByTitle(req, context);
+	        			case UPDATE:
+	        				return this.updateForum(req, context);
+	        			case ADD_COMMENT:
+	        				return this.addCommentToForum(req, context);
+	        			case DELETE:
+	        				return this.deleteForum(req, context);
+	        			default:
+	        				throw new UnsupportedOperationException("ERROR! The service "
+	        						+ "does not support operation: " + operation.toString());
+	        		}
         		}
+        		else {
+        			throw new MissingOperationException("ERROR! The incoming request "
+        					+ "is missing a required operation attribute!");
+        		}
+        	}
+        	catch (MissingOperationException moe) {
+        		//Set error response and return
+        		response.setPayload(null);
+        		response.setStatus(false);
+        		response.setMessage(ServiceMessages.MISSING_OPERATION.toString());
+        		response.setExceptionThrown(true);
+        		
+        		String exceptionMessage = this.compileExceptionMessage(moe);
+        		response.setExceptionMessage(exceptionMessage);
+        		logger.log(exceptionMessage);
+        		return response;
         	}
         	catch (UnsupportedOperationException uoe) {
         		// Set error response and return
