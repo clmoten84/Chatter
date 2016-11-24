@@ -23,6 +23,7 @@ import com.chatter.forumservice.requests.RequestValidator;
 import com.chatter.forumservice.requests.RetrieveForumRequest;
 import com.chatter.forumservice.requests.UpdateForumRequest;
 import com.chatter.forumservice.responses.ForumResultPage;
+import com.chatter.forumservice.responses.ServicePropsResponse;
 import com.chatter.forumservice.util.PropertiesResolver;
 import com.chatter.model.ChatterForum;
 
@@ -372,5 +373,17 @@ public class ForumDAOImpl implements ForumDAO{
 					+ " contained invalid or NULL values for required parameters.");
 		}
 		return opSuccess;
+	}
+	
+	/**
+	 * Gathers data about this service and returns it in an object wrapper
+	 * @return ServicePropsResponse
+	 */
+	public ServicePropsResponse getServiceProperties() {
+		return new ServicePropsResponse(
+				this.propsResolver.getProperty("service.env"),
+				this.propsResolver.getProperty("service.name"),
+				this.propsResolver.getProperty("service.description"), 
+				this.propsResolver.getProperty("service.version"));
 	}
 }

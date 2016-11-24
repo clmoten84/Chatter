@@ -11,6 +11,7 @@ import com.chatter.forumservice.requests.QueryByTitleRequest;
 import com.chatter.forumservice.requests.RetrieveForumRequest;
 import com.chatter.forumservice.requests.UpdateForumRequest;
 import com.chatter.forumservice.responses.ForumResultPage;
+import com.chatter.forumservice.responses.ServicePropsResponse;
 import com.chatter.model.ChatterForum;
 
 /**
@@ -106,4 +107,10 @@ public interface ForumDAO {
 	public ForumResultPage queryByTitle(QueryByTitleRequest req) throws 
 		RequestValidationException, AmazonServiceException,
 		AmazonClientException;
+	
+	/**
+	 * Gathers data about this service and returns in an object wrapper
+	 * @return ServicePropsResponse
+	 */
+	public ServicePropsResponse getServiceProperties();
 }

@@ -14,10 +14,6 @@ import com.chatter.forumservice.util.ServiceOperations;
 public class PingRequest extends Request{
 	
 	public PingRequest() {
-		super();
-	}
-	
-	public PingRequest(String ping) {
 		super(ServiceOperations.PING, new Date().getTime());
 	}
 	

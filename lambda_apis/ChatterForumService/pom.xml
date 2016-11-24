@@ -4,7 +4,7 @@
   <artifactId>ChatterForumService</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>ChatterForumService</name>
-  <description>Service API for handling Chatter forum related requests</description>
+  <description>A CRUD service for Chatter Forum data</description>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>

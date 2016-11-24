@@ -5,18 +5,23 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
-import org.junit.BeforeClass;
+import org.junit.Assert;
 import org.junit.Test;
 
-import com.amazonaws.services.lambda.runtime.Context;
 import com.chatter.forumservice.handler.ChatterForumServiceRequestHandler;
 import com.chatter.forumservice.requests.AddCommentRequest;
 import com.chatter.forumservice.requests.CreateForumRequest;
 import com.chatter.forumservice.requests.DeleteForumRequest;
+import com.chatter.forumservice.requests.ForumServiceRequest;
+import com.chatter.forumservice.requests.PingRequest;
 import com.chatter.forumservice.requests.QueryByCreatorRequest;
 import com.chatter.forumservice.requests.QueryByTitleRequest;
 import com.chatter.forumservice.requests.RetrieveForumRequest;
 import com.chatter.forumservice.requests.UpdateForumRequest;
+import com.chatter.forumservice.responses.ForumServiceResponse;
+import com.chatter.forumservice.responses.ServicePropsResponse;
+import com.chatter.forumservice.util.ServiceMessages;
+import com.chatter.forumservice.util.ServiceOperations;
 import com.chatter.model.ChatterForum;
 
 /**
@@ -115,14 +120,70 @@ public class ChatterForumServiceRequestHandlerTest {
 	private DeleteForumRequest generateDeleteForumRequest(String forumId) {
 		return new DeleteForumRequest(forumId);
 	}
+	
+	/**
+	 * Generate a sample PingRequest object
+	 * @return PingRequest
+	 */
+	private PingRequest generatePingRequest() {
+		return new PingRequest();
+	}
 
 	/****************** Tests *****************/
+	
+	/**
+	 * Test a ping request to this service. Should return information
+	 * about this service wrapped in an object wrapper.
+	 */
+	public void testPingRequest() {
+		System.out.println("ChatterForumService test: testPingRequest");
+		this.testCtx.setFunctionName(ServiceOperations.PING.toString());
+		
+		ForumServiceRequest<PingRequest> request = new ForumServiceRequest<>();
+		request.setData(this.generatePingRequest());
+		
+		@SuppressWarnings("unchecked")
+		ForumServiceResponse<ServicePropsResponse> response = 
+			(ForumServiceResponse<ServicePropsResponse>) handler.handleRequest(request, 
+					this.testCtx);
+		
+		/* Assertions */
+		Assert.assertTrue(response.getStatus());
+		Assert.assertFalse(response.getExceptionThrown());
+		Assert.assertNull(response.getExceptionMessage());
+		Assert.assertNotNull(response.getPayload());
+		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS, response.getMessage());
+	}
+	
 	/**
 	 * Test creating and saving a new forum object to DB
 	 */
 	@Test
 	public void testCreateForumRequest() {
+		System.out.println("ChatterForumService test: testCreateForumRequest");
+		this.testCtx.setFunctionName(ServiceOperations.CREATE.toString());
 		
+		ForumServiceRequest<CreateForumRequest> request = new ForumServiceRequest<>();
+		request.setData(this.generateCreateForumRequest(this.createForum()));
+		
+		@SuppressWarnings("unchecked")
+		ForumServiceResponse<ChatterForum> response = (ForumServiceResponse<ChatterForum>)
+			handler.handleRequest(request, this.testCtx);
+		
+		/* Assertions */
+		Assert.assertTrue(response.getStatus());
+		Assert.assertFalse(response.getExceptionThrown());
+		Assert.assertNull(response.getExceptionMessage());
+		Assert.assertNotNull(response.getPayload());
+		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS, response.getMessage());
+		
+		if (response.getPayload() != null) {
+			this.forum = response.getPayload();
+			Assert.assertNotNull(this.forum.getForumId());
+			Assert.assertEquals("Just a Test Forum", this.forum.getTitle());
+			Assert.assertEquals("Conde Nast", this.forum.getCreatedBy());
+			Assert.assertNotNull(this.forum.getCommentIds());
+		}
 	}
 	
 	/**
@@ -130,7 +191,8 @@ public class ChatterForumServiceRequestHandlerTest {
 	 */
 	@Test
 	public void testRetrieveForumRequest() {
-		
+		System.out.println("ChatterForumService test: testRetrieveForumRequest");
+		this.testCtx.setFunctionName(ServiceOperations.QUERY_BY_ID.toString());
 	}
 	
 	/**
@@ -138,7 +200,8 @@ public class ChatterForumServiceRequestHandlerTest {
 	 */
 	@Test
 	public void testQueryByCreatorRequest() {
-		
+		System.out.println("ChatterForumService test: testQueryByCreatorRequest");
+		this.testCtx.setFunctionName(ServiceOperations.QUERY_BY_CREATOR.toString());
 	}
 	
 	/**
@@ -146,7 +209,8 @@ public class ChatterForumServiceRequestHandlerTest {
 	 */
 	@Test
 	public void testQueryByTitleRequest() {
-		
+		System.out.println("ChatterForumService test: testQueryByTitleRequest");
+		this.testCtx.setFunctionName(ServiceOperations.QUERY_BY_TITLE.toString());
 	}
 	
 	/**
@@ -154,7 +218,8 @@ public class ChatterForumServiceRequestHandlerTest {
 	 */
 	@Test
 	public void testUpdateForumRequest() {
-		
+		System.out.println("ChatterForumService test: testUpdateForumRequest");
+		this.testCtx.setFunctionName(ServiceOperations.UPDATE.toString());
 	}
 	
 	/**
@@ -162,7 +227,8 @@ public class ChatterForumServiceRequestHandlerTest {
 	 */
 	@Test
 	public void testAddCommentRequest() {
-		
+		System.out.println("ChatterForumService test: testAddCommentRequest");
+		this.testCtx.setFunctionName(ServiceOperations.ADD_COMMENT.toString());
 	}
 	
 	/**
@@ -170,6 +236,7 @@ public class ChatterForumServiceRequestHandlerTest {
 	 */
 	@Test
 	public void testDeleteForumRequest() {
-		
+		System.out.println("ChatterForumService test: testDeleteForumRequest");
+		this.testCtx.setFunctionName(ServiceOperations.DELETE.toString());
 	}
 }

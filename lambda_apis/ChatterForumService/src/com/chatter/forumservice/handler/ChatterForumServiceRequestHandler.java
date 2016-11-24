@@ -21,6 +21,7 @@ import com.chatter.forumservice.requests.RetrieveForumRequest;
 import com.chatter.forumservice.requests.UpdateForumRequest;
 import com.chatter.forumservice.responses.ForumResultPage;
 import com.chatter.forumservice.responses.ForumServiceResponse;
+import com.chatter.forumservice.responses.ServicePropsResponse;
 import com.chatter.forumservice.util.ServiceMessages;
 import com.chatter.forumservice.util.ServiceOperations;
 import com.chatter.model.ChatterForum;
@@ -356,21 +357,22 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
     }
     
     /**
-     * Pings the service to ensure availability
+     * Pings the service to ensure availability. Response includes
+     * service information.
      * @param input the request to process
      * @param context the request context
      * @return a ForumServiceResponse
      */
-    public ForumServiceResponse<String> pingService(ForumServiceRequest<Request> input, 
+    public ForumServiceResponse<ServicePropsResponse> pingService(ForumServiceRequest<Request> input, 
     		Context context) {
-    	ForumServiceResponse<String> response = new ForumServiceResponse<>();
+    	ForumServiceResponse<ServicePropsResponse> response = new ForumServiceResponse<>();
     	PingRequest request = (PingRequest) input.getData();
     	
     	// Log request info to lambda logger
     	LambdaLogger logger = context.getLogger();
     	logger.log(request.toString());
     	
-    	response.setPayload("pong");
+    	response.setPayload(forumDao.getServiceProperties());
     	response.setStatus(true);
     	response.setExceptionThrown(false);
     	response.setExceptionMessage(null);
