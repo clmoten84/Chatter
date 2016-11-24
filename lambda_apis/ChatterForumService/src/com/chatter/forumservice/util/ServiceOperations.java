@@ -15,5 +15,6 @@ package com.chatter.forumservice.util;
  */
 public enum ServiceOperations {
 	CREATE, QUERY_BY_ID, QUERY_BY_CREATOR,
-	QUERY_BY_TITLE, UPDATE, DELETE, ADD_COMMENT
+	QUERY_BY_TITLE, UPDATE, DELETE, ADD_COMMENT,
+	PING
 }

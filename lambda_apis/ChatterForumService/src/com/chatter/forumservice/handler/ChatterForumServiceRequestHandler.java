@@ -13,6 +13,7 @@ import com.chatter.forumservice.requests.AddCommentRequest;
 import com.chatter.forumservice.requests.CreateForumRequest;
 import com.chatter.forumservice.requests.DeleteForumRequest;
 import com.chatter.forumservice.requests.ForumServiceRequest;
+import com.chatter.forumservice.requests.PingRequest;
 import com.chatter.forumservice.requests.QueryByCreatorRequest;
 import com.chatter.forumservice.requests.QueryByTitleRequest;
 import com.chatter.forumservice.requests.Request;
@@ -58,6 +59,8 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
 	        				return this.addCommentToForum(req, context);
 	        			case DELETE:
 	        				return this.deleteForum(req, context);
+	        			case PING:
+	        				return this.pingService(req, context);
 	        			default:
 	        				throw new UnsupportedOperationException("ERROR! The service "
 	        						+ "does not support operation: " + operation.toString());
@@ -349,6 +352,29 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
     		response.setMessage(ServiceMessages.OPERATION_FAILED.toString());
     	else
     		response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	return response;
+    }
+    
+    /**
+     * Pings the service to ensure availability
+     * @param input the request to process
+     * @param context the request context
+     * @return a ForumServiceResponse
+     */
+    public ForumServiceResponse<String> pingService(ForumServiceRequest<Request> input, 
+    		Context context) {
+    	ForumServiceResponse<String> response = new ForumServiceResponse<>();
+    	PingRequest request = (PingRequest) input.getData();
+    	
+    	// Log request info to lambda logger
+    	LambdaLogger logger = context.getLogger();
+    	logger.log(request.toString());
+    	
+    	response.setPayload("pong");
+    	response.setStatus(true);
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
+    	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
     	return response;
     }
     
