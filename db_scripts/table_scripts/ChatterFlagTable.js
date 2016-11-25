@@ -1,13 +1,13 @@
 /*
- * Chatter_Forum table creation script
+ * Chatter_Flag table creation script
  */
 var params = {
-    TableName : "Chatter_Forum",
+    TableName : "Chatter_Flag",
     KeySchema: [       
-        { AttributeName: "forum_id", KeyType: "HASH" } //Partition Key
+        { AttributeName: "flag_id", KeyType: "HASH" } //Partition Key
     ],
     AttributeDefinitions: [       
-        { AttributeName: "username", AttributeType: "S" },
+        { AttributeName: "flag_id", AttributeType: "S" },
     ],
     ProvisionedThroughput: {       
         ReadCapacityUnits: 25, //Free (for a year anyways)
@@ -24,11 +24,11 @@ dynamodb.createTable(params, function(err, data) {
 
 // Global Secondary Index definitions
 var params = {
-    TableName: "Chatter_Forum",
+    TableName: "Chatter_Flag",
     AttributeDefinitions:[
         {AttributeName: "created_by", AttributeType: "S"},
         {AttributeName: "time_stamp", AttributeType: "N"},
-        {AttributeName: "title", AttributeType: "S"}
+        {AttributeName: "comment_id", AttributeType: "S"}
     ],
     GlobalSecondaryIndexUpdates: [
         {
@@ -38,10 +38,6 @@ var params = {
                     {
                         AttributeName: "created_by", 
                         KeyType: "HASH" 
-                    }, 
-                    {
-                        AttributeName: "time_stamp",
-                        KeyType: "RANGE"
                     }
                 ],
                 Projection: {
@@ -55,11 +51,15 @@ var params = {
         },
         {
             Create: {
-                IndexName: "title_index",
+                IndexName: "comment_id_index",
                 KeySchema: [
                     {
-                        AttributeName: "title",
+                        AttributeName: "comment_id",
                         KeyType: "HASH"
+                    },
+                    {
+                        AttributeName: "time_stamp",
+                        KeyType: "RANGE"
                     }
                 ],
                 Projection: {
