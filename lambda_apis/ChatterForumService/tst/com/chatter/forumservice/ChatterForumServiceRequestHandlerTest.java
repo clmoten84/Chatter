@@ -1,6 +1,5 @@
 package com.chatter.forumservice;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -18,6 +17,7 @@ import com.chatter.forumservice.requests.QueryByCreatorRequest;
 import com.chatter.forumservice.requests.QueryByTitleRequest;
 import com.chatter.forumservice.requests.RetrieveForumRequest;
 import com.chatter.forumservice.requests.UpdateForumRequest;
+import com.chatter.forumservice.responses.ForumResultPage;
 import com.chatter.forumservice.responses.ForumServiceResponse;
 import com.chatter.forumservice.responses.ServicePropsResponse;
 import com.chatter.forumservice.util.ServiceMessages;
@@ -35,7 +35,6 @@ public class ChatterForumServiceRequestHandlerTest {
 	private ChatterForumServiceRequestHandler handler = new ChatterForumServiceRequestHandler();
 	private TestContext testCtx = new TestContext();
 	private ChatterForum forum;
-	private List<ChatterForum> forumList;
 	
 	/**
 	 * Create and return a test Chatter forum 
@@ -100,7 +99,7 @@ public class ChatterForumServiceRequestHandlerTest {
 	 * @return UpdateForumRequest
 	 */
 	private UpdateForumRequest generateUpdateForumRequest(String forumId) {
-		return new UpdateForumRequest(forumId, "I just modified this forum name");
+		return new UpdateForumRequest(forumId, "I just modified this forum title");
 	}
 	
 	/**
@@ -131,11 +130,31 @@ public class ChatterForumServiceRequestHandlerTest {
 
 	/****************** Tests *****************/
 	
+	// I need to execute tests in a specific order since creating and 
+	// saving a new Forum object generates the forumId for the object. 
+	// This forumId is used in several of the other tests here. So I
+	// need that test to execute before the other tests. To accomplish
+	// this I am running the tests in a "test suite" so that I can control
+	// the order of execution of the test methods. I know this violates
+	// JUnit testing principles, but...WTF.
+	
+	@Test
+	public void runChatterForumServiceTests() {
+		this.testPingRequest();
+		this.testCreateForumRequest();
+		this.testRetrieveForumRequest();
+		this.testQueryByCreatorRequest();
+		this.testQueryByTitleRequest();
+		this.testUpdateForumRequest();
+		this.testAddCommentRequest();
+		this.testDeleteForumRequest();
+	}
+	
 	/**
 	 * Test a ping request to this service. Should return information
 	 * about this service wrapped in an object wrapper.
 	 */
-	public void testPingRequest() {
+	private void testPingRequest() {
 		System.out.println("ChatterForumService test: testPingRequest");
 		this.testCtx.setFunctionName(ServiceOperations.PING.toString());
 		
@@ -152,14 +171,13 @@ public class ChatterForumServiceRequestHandlerTest {
 		Assert.assertFalse(response.getExceptionThrown());
 		Assert.assertNull(response.getExceptionMessage());
 		Assert.assertNotNull(response.getPayload());
-		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS, response.getMessage());
+		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS.toString(), response.getMessage());
 	}
 	
 	/**
 	 * Test creating and saving a new forum object to DB
 	 */
-	@Test
-	public void testCreateForumRequest() {
+	private void testCreateForumRequest() {
 		System.out.println("ChatterForumService test: testCreateForumRequest");
 		this.testCtx.setFunctionName(ServiceOperations.CREATE.toString());
 		
@@ -175,7 +193,7 @@ public class ChatterForumServiceRequestHandlerTest {
 		Assert.assertFalse(response.getExceptionThrown());
 		Assert.assertNull(response.getExceptionMessage());
 		Assert.assertNotNull(response.getPayload());
-		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS, response.getMessage());
+		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS.toString(), response.getMessage());
 		
 		if (response.getPayload() != null) {
 			this.forum = response.getPayload();
@@ -189,54 +207,180 @@ public class ChatterForumServiceRequestHandlerTest {
 	/**
 	 * Test retrieving a forum object from DB using forum id
 	 */
-	@Test
-	public void testRetrieveForumRequest() {
+	private void testRetrieveForumRequest() {
 		System.out.println("ChatterForumService test: testRetrieveForumRequest");
 		this.testCtx.setFunctionName(ServiceOperations.QUERY_BY_ID.toString());
+		
+		ForumServiceRequest<RetrieveForumRequest> request = new ForumServiceRequest<>();
+		request.setData(this.generateRetrieveForumRequest(this.forum.getForumId()));
+		
+		@SuppressWarnings("unchecked")
+		ForumServiceResponse<ChatterForum> response = (ForumServiceResponse<ChatterForum>)
+			handler.handleRequest(request, this.testCtx);
+		
+		/* Assertions */
+		Assert.assertTrue(response.getStatus());
+		Assert.assertFalse(response.getExceptionThrown());
+		Assert.assertNull(response.getExceptionMessage());
+		Assert.assertNotNull(response.getPayload());
+		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS.toString(), response.getMessage());
+		
+		if (response.getPayload() != null) {
+			Assert.assertEquals("Just a Test Forum", response.getPayload().getTitle());
+			Assert.assertEquals("Conde Nast", response.getPayload().getCreatedBy());
+		}
 	}
 	
 	/**
 	 * Test querying DB for forum objects using createdBy attribute
 	 */
-	@Test
 	public void testQueryByCreatorRequest() {
 		System.out.println("ChatterForumService test: testQueryByCreatorRequest");
 		this.testCtx.setFunctionName(ServiceOperations.QUERY_BY_CREATOR.toString());
+		
+		ForumServiceRequest<QueryByCreatorRequest> request = new ForumServiceRequest<>();
+		request.setData(this.generateQueryByCreatorRequest("Conde Nast"));
+		
+		@SuppressWarnings("unchecked")
+		ForumServiceResponse<ForumResultPage> response = (ForumServiceResponse<ForumResultPage>)
+				handler.handleRequest(request, this.testCtx);
+		
+		/* Assertions */
+		Assert.assertTrue(response.getStatus());
+		Assert.assertFalse(response.getExceptionThrown());
+		Assert.assertNull(response.getExceptionMessage());
+		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS.toString(), response.getMessage());
+		Assert.assertNotNull(response.getPayload());
+		
+		if (response.getPayload() != null) {
+			ForumResultPage page = response.getPayload();
+			
+			// Assert result page details
+			Assert.assertTrue(page.getResultCount() > 0);
+			Assert.assertNotNull(page.getLastEvaluatedKey());
+			Assert.assertFalse(page.getMoreResults());
+			
+			// Assert actual retrieved forum details
+			List<ChatterForum> forums = page.getPageResults();
+			Assert.assertNotNull(forums);
+			Assert.assertFalse(forums.isEmpty());
+			Assert.assertEquals(this.forum.getForumId(), forums.get(0).getForumId());
+			Assert.assertEquals(this.forum.getCreatedBy(), forums.get(0).getCreatedBy());
+		}
 	}
 	
 	/**
 	 * Test querying DB for forum objects using title attribute
 	 */
-	@Test
 	public void testQueryByTitleRequest() {
 		System.out.println("ChatterForumService test: testQueryByTitleRequest");
 		this.testCtx.setFunctionName(ServiceOperations.QUERY_BY_TITLE.toString());
+		
+		ForumServiceRequest<QueryByTitleRequest> request = new ForumServiceRequest<>();
+		request.setData(this.generateQueryByTitleRequest("Conde Nast"));
+		
+		@SuppressWarnings("unchecked")
+		ForumServiceResponse<ForumResultPage> response = (ForumServiceResponse<ForumResultPage>)
+				handler.handleRequest(request, this.testCtx);
+		
+		/* Assertions */
+		Assert.assertTrue(response.getStatus());
+		Assert.assertFalse(response.getExceptionThrown());
+		Assert.assertNull(response.getExceptionMessage());
+		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS.toString(), response.getMessage());
+		Assert.assertNotNull(response.getPayload());
+		
+		if (response.getPayload() != null) {
+			ForumResultPage page = response.getPayload();
+			
+			// Assert result page details
+			Assert.assertTrue(page.getResultCount() > 0);
+			Assert.assertNotNull(page.getLastEvaluatedKey());
+			Assert.assertFalse(page.getMoreResults());
+			
+			// Assert actual retrieved forum details
+			List<ChatterForum> forums = page.getPageResults();
+			Assert.assertNotNull(forums);
+			Assert.assertFalse(forums.isEmpty());
+			Assert.assertEquals(this.forum.getForumId(), forums.get(0).getForumId());
+			Assert.assertEquals(this.forum.getTitle(), forums.get(0).getTitle());
+		}
 	}
 	
 	/**
 	 * Test updating a forum object in DB
 	 */
-	@Test
 	public void testUpdateForumRequest() {
 		System.out.println("ChatterForumService test: testUpdateForumRequest");
 		this.testCtx.setFunctionName(ServiceOperations.UPDATE.toString());
+		
+		ForumServiceRequest<UpdateForumRequest> request = new ForumServiceRequest<>();
+		request.setData(this.generateUpdateForumRequest(this.forum.getForumId()));
+		
+		@SuppressWarnings("unchecked")
+		ForumServiceResponse<ChatterForum> response = (ForumServiceResponse<ChatterForum>)
+			handler.handleRequest(request, this.testCtx);
+		
+		/* Assertions */
+		Assert.assertTrue(response.getStatus());
+		Assert.assertFalse(response.getExceptionThrown());
+		Assert.assertNull(response.getExceptionMessage());
+		Assert.assertNotNull(response.getPayload());
+		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS.toString(), response.getMessage());
+		
+		if (response.getPayload() != null) {
+			Assert.assertEquals(this.forum.getForumId(), response.getPayload().getForumId());
+			Assert.assertEquals("I just modified this forum name", 
+					response.getPayload().getTitle());
+			Assert.assertEquals("Conde Nast", response.getPayload().getCreatedBy());
+		}
 	}
 	
 	/**
 	 * Test adding a comment (comment id) to a forum object in DB
 	 */
-	@Test
 	public void testAddCommentRequest() {
 		System.out.println("ChatterForumService test: testAddCommentRequest");
 		this.testCtx.setFunctionName(ServiceOperations.ADD_COMMENT.toString());
+		
+		ForumServiceRequest<AddCommentRequest> request = new ForumServiceRequest<>();
+		request.setData(this.generateAddCommentRequest(this.forum.getForumId()));
+		
+		@SuppressWarnings("unchecked")
+		ForumServiceResponse<ChatterForum> response = (ForumServiceResponse<ChatterForum>)
+			handler.handleRequest(request, this.testCtx);
+		
+		/* Assertions */
+		Assert.assertTrue(response.getStatus());
+		Assert.assertFalse(response.getExceptionThrown());
+		Assert.assertNull(response.getExceptionMessage());
+		Assert.assertNotNull(response.getPayload());
+		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS.toString(), response.getMessage());
+		
+		if (response.getPayload() != null) {
+			Assert.assertEquals(this.forum.getForumId(), response.getPayload().getForumId());
+			Assert.assertTrue(response.getPayload().getCommentIds().size() > 0);
+		}
 	}
 	
 	/**
 	 * Test deleting a forum object from DB
 	 */
-	@Test
 	public void testDeleteForumRequest() {
 		System.out.println("ChatterForumService test: testDeleteForumRequest");
 		this.testCtx.setFunctionName(ServiceOperations.DELETE.toString());
+		
+		ForumServiceRequest<DeleteForumRequest> request = new ForumServiceRequest<>();
+		request.setData(this.generateDeleteForumRequest(this.forum.getForumId()));
+		
+		@SuppressWarnings("unchecked")
+		ForumServiceResponse<ChatterForum> response = (ForumServiceResponse<ChatterForum>)
+			handler.handleRequest(request, this.testCtx);
+		
+		/* Assertions */
+		Assert.assertTrue(response.getStatus());
+		Assert.assertFalse(response.getExceptionThrown());
+		Assert.assertNull(response.getExceptionMessage());
+		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS.toString(), response.getMessage());
 	}
 }
