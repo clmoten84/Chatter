@@ -4,14 +4,20 @@
 var params = {
     TableName : "Chatter_Flag",
     KeySchema: [       
-        { AttributeName: "flag_id", KeyType: "HASH" } //Partition Key
+        { 
+            AttributeName: "flag_id", 
+            KeyType: "HASH" 
+        }
     ],
     AttributeDefinitions: [       
-        { AttributeName: "flag_id", AttributeType: "S" },
+        { 
+            AttributeName: "flag_id", 
+            AttributeType: "S" 
+        },
     ],
     ProvisionedThroughput: {       
-        ReadCapacityUnits: 25, //Free (for a year anyways)
-        WriteCapacityUnits: 25 //Free (for a year anyways)
+        ReadCapacityUnits: 25, 
+        WriteCapacityUnits: 25 
     }
 };
 

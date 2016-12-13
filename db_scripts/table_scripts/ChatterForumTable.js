@@ -4,14 +4,20 @@
 var params = {
     TableName : "Chatter_Forum",
     KeySchema: [       
-        { AttributeName: "forum_id", KeyType: "HASH" } //Partition Key
+        { 
+            AttributeName: "forum_id", 
+            KeyType: "HASH" 
+        }
     ],
     AttributeDefinitions: [       
-        { AttributeName: "username", AttributeType: "S" },
+        {
+            AttributeName: "forum_id",
+            AttributeType: "S"
+        }
     ],
     ProvisionedThroughput: {       
-        ReadCapacityUnits: 25, //Free (for a year anyways)
-        WriteCapacityUnits: 25 //Free (for a year anyways)
+        ReadCapacityUnits: 25,
+        WriteCapacityUnits: 25
     }
 };
 
