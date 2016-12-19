@@ -13,6 +13,7 @@ public class ServicePropsResponse {
 	private String version;
 	
 	public ServicePropsResponse(String env, String name, String description, String version) {
+		this.env = env;
 		this.name = name;
 		this.description = description;
 		this.version = version;
@@ -48,5 +49,19 @@ public class ServicePropsResponse {
 
 	public void setVersion(String version) {
 		this.version = version;
+	}
+	
+	@Override
+	public String toString() {
+		return new StringBuilder()
+			.append("Service ENV: ")
+			.append(this.getEnv())
+			.append("\nService Name: ")
+			.append(this.getName())
+			.append("\nService Version: ")
+			.append(this.getVersion())
+			.append("\nService Description: ")
+			.append(this.getDescription())
+			.toString();
 	}
 }

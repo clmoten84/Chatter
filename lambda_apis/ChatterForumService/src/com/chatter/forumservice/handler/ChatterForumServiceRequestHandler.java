@@ -16,6 +16,7 @@ import com.chatter.forumservice.requests.ForumServiceRequest;
 import com.chatter.forumservice.requests.PingRequest;
 import com.chatter.forumservice.requests.QueryByCreatorRequest;
 import com.chatter.forumservice.requests.QueryByTitleRequest;
+import com.chatter.forumservice.requests.RemoveCommentRequest;
 import com.chatter.forumservice.requests.Request;
 import com.chatter.forumservice.requests.RetrieveForumRequest;
 import com.chatter.forumservice.requests.UpdateForumRequest;
@@ -58,6 +59,8 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
 	        				return this.updateForum(req, context);
 	        			case ADD_COMMENT:
 	        				return this.addCommentToForum(req, context);
+	        			case REMOVE_COMMENT:
+	        				return this.removeCommentFromForum(req, context);
 	        			case DELETE:
 	        				return this.deleteForum(req, context);
 	        			case PING:
@@ -257,6 +260,37 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
 	}
     
     /**
+     * Updates a ChatterForum object by removing a comment id from the 
+     * set of comment ids associated with forum.
+     * 
+     * @param input the request to process
+     * @param context lambda context object
+     * @return ForumServiceResponse
+     * 
+     * @throws RequestValidationException
+     * @throws AmazonServiceException
+     * @throws AmazonClientException
+     */
+    public ForumServiceResponse<ChatterForum> removeCommentFromForum(ForumServiceRequest<Request>
+    		input, Context context) throws RequestValidationException, AmazonServiceException,
+    			AmazonClientException {
+    	ForumServiceResponse<ChatterForum> response = new ForumServiceResponse<>();
+		RemoveCommentRequest request = (RemoveCommentRequest) input.getData();
+		
+		// Log request info to lambda logger
+		LambdaLogger logger = context.getLogger();
+		logger.log(request.toString());
+		
+		ChatterForum forum = forumDao.removeCommentFromForum(request);
+		response.setPayload(forum);
+    	response.setStatus(true);
+    	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
+    	return response;
+    }
+    
+    /**
      * Queries the ChatterForum DB table using the global secondary 
      * index (createdBy). Results are returned in pages of 20. The
      * result page also contains the last key evaluated so that subsequent
@@ -350,9 +384,9 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
     	response.setExceptionMessage(null);
     	
     	if(opSuccess) 
-    		response.setMessage(ServiceMessages.OPERATION_FAILED.toString());
-    	else
     		response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	else
+    		response.setMessage(ServiceMessages.OPERATION_FAILED.toString());
     	return response;
     }
     

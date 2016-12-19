@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -19,6 +20,7 @@ import com.chatter.forumservice.requests.CreateForumRequest;
 import com.chatter.forumservice.requests.DeleteForumRequest;
 import com.chatter.forumservice.requests.QueryByCreatorRequest;
 import com.chatter.forumservice.requests.QueryByTitleRequest;
+import com.chatter.forumservice.requests.RemoveCommentRequest;
 import com.chatter.forumservice.requests.RequestValidator;
 import com.chatter.forumservice.requests.RetrieveForumRequest;
 import com.chatter.forumservice.requests.UpdateForumRequest;
@@ -71,7 +73,7 @@ public class ForumDAOImpl implements ForumDAO{
 			forum.setCreatedBy(req.getCreatedBy());
 			forum.setTitle(req.getTitle());
 			forum.setTimeStamp(new Date().getTime());
-			forum.setCommentIds(new HashSet<String>());
+			forum.setCommentIds(null);
 			
 			//Save ChatterForum object to DB
 			dbMapper.save(forum);
@@ -161,12 +163,59 @@ public class ForumDAOImpl implements ForumDAO{
 			
 			// Attempt to add comment to Forum object if retrieval was successful
 			if (forum != null) {
-				forum.getCommentIds().add(req.getCommentId());
+				Set<String> commentIds = forum.getCommentIds();
+				if (commentIds == null) {
+					commentIds = new HashSet<String>();
+				}
+				commentIds.add(req.getCommentId());
+				forum.setCommentIds(commentIds);
 				dbMapper.save(forum);
 			}
 		}
 		else {
 			throw new RequestValidationException("ERROR: Add comment request"
+					+ " contained invalid or NULL values for required parameters.");
+		}
+		return forum;
+	}
+	
+	/**
+	 * Removes a comment id to the set of comment ids for a Forum object
+	 * 
+	 * @param RemoveCommentRequest request containing data for object update
+	 * @throws RequestValidationException
+	 * @throws AmazonServiceException
+	 * @throws AmazonClientException
+	 * @return ChatterForum the updated Forum object
+	 */
+	@Override
+	public ChatterForum removeCommentFromForum(RemoveCommentRequest req) throws
+		RequestValidationException, AmazonServiceException, AmazonClientException {
+		
+		ChatterForum forum = null;
+		if (RequestValidator.validateRemoveCommentRequest(req)) {
+			// Attempt to retrieve Forum object from DB
+			forum = dbMapper.load(ChatterForum.class, req.getForumId());
+			
+			// Attempt to add comment to Forum object if retrieval was successful
+			if (forum != null) {
+				Set<String> commentIds = forum.getCommentIds();
+				commentIds.remove(req.getCommentId());
+				
+				// If the resultant list is now empty, null the reference to it
+				if(commentIds.isEmpty()) {
+					forum.setCommentIds(null);
+				}
+				else {
+					forum.setCommentIds(commentIds);
+				}
+				
+				// Save updated Forum object
+				dbMapper.save(forum);
+			}
+		}
+		else {
+			throw new RequestValidationException("ERROR: Remove comment request"
 					+ " contained invalid or NULL values for required parameters.");
 		}
 		return forum;

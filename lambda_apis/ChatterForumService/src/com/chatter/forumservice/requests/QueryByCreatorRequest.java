@@ -70,9 +70,9 @@ public class QueryByCreatorRequest extends Request{
 	public String toString() {
 		return new StringBuilder()
 			.append("***** Query By Creator request *****")
-			.append("created_by: ").append(this.createdBy)
-			.append("time_stamp_from: ").append(this.timeStampFrom)
-			.append("time_stamp_to: ").append(this.timeStampTo)
+			.append("\ncreated_by: ").append(this.createdBy)
+			.append("\ntime_stamp_from: ").append(this.timeStampFrom)
+			.append("\ntime_stamp_to: ").append(this.timeStampTo)
 			.toString();
 	}
 }

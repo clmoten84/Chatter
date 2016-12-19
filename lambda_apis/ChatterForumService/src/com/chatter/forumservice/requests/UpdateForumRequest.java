@@ -48,8 +48,8 @@ public class UpdateForumRequest extends Request{
 	public String toString() {
 		return new StringBuilder()
 			.append("***** Update Forum request *****")
-			.append("forum_id: ").append(this.forumId)
-			.append("title_update: ").append(this.titleUpdate)
+			.append("\nforum_id: ").append(this.forumId)
+			.append("\ntitle_update: ").append(this.titleUpdate)
 			.toString();
 	}
 }

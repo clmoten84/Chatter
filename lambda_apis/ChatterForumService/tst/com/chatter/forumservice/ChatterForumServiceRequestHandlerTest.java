@@ -1,7 +1,6 @@
 package com.chatter.forumservice;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 
 import org.junit.Assert;
@@ -15,6 +14,7 @@ import com.chatter.forumservice.requests.ForumServiceRequest;
 import com.chatter.forumservice.requests.PingRequest;
 import com.chatter.forumservice.requests.QueryByCreatorRequest;
 import com.chatter.forumservice.requests.QueryByTitleRequest;
+import com.chatter.forumservice.requests.RemoveCommentRequest;
 import com.chatter.forumservice.requests.RetrieveForumRequest;
 import com.chatter.forumservice.requests.UpdateForumRequest;
 import com.chatter.forumservice.responses.ForumResultPage;
@@ -45,7 +45,6 @@ public class ChatterForumServiceRequestHandlerTest {
 		forum.setTitle("Just a Test Forum");
 		forum.setCreatedBy("Conde Nast");
 		forum.setTimeStamp(new Date().getTime());
-		forum.setCommentIds(new HashSet<String>());
 		return forum;
 	}
 	
@@ -112,6 +111,15 @@ public class ChatterForumServiceRequestHandlerTest {
 	}
 	
 	/**
+	 * Generate a sample RemoveCommentRequest object
+	 * @param forumId
+	 * @return RemoveCommentRequest
+	 */
+	private RemoveCommentRequest generateRemoveCommentRequest(String forumId) {
+		return new RemoveCommentRequest(forumId, "1234-TEST");
+	}
+	
+	/**
 	 * Generate a sample DeleteForumRequest object
 	 * @param forumId
 	 * @return DeleteForumRequest
@@ -143,10 +151,11 @@ public class ChatterForumServiceRequestHandlerTest {
 		this.testPingRequest();
 		this.testCreateForumRequest();
 		this.testRetrieveForumRequest();
-		this.testQueryByCreatorRequest();
-		this.testQueryByTitleRequest();
+		//this.testQueryByCreatorRequest();
+		//this.testQueryByTitleRequest();
 		this.testUpdateForumRequest();
 		this.testAddCommentRequest();
+		this.testRemoveCommentRequest();
 		this.testDeleteForumRequest();
 	}
 	
@@ -172,6 +181,10 @@ public class ChatterForumServiceRequestHandlerTest {
 		Assert.assertNull(response.getExceptionMessage());
 		Assert.assertNotNull(response.getPayload());
 		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS.toString(), response.getMessage());
+		
+		if (response.getPayload() != null) {
+			System.out.println(response.getPayload().toString());
+		}
 	}
 	
 	/**
@@ -200,7 +213,6 @@ public class ChatterForumServiceRequestHandlerTest {
 			Assert.assertNotNull(this.forum.getForumId());
 			Assert.assertEquals("Just a Test Forum", this.forum.getTitle());
 			Assert.assertEquals("Conde Nast", this.forum.getCreatedBy());
-			Assert.assertNotNull(this.forum.getCommentIds());
 		}
 	}
 	
@@ -330,7 +342,7 @@ public class ChatterForumServiceRequestHandlerTest {
 		
 		if (response.getPayload() != null) {
 			Assert.assertEquals(this.forum.getForumId(), response.getPayload().getForumId());
-			Assert.assertEquals("I just modified this forum name", 
+			Assert.assertEquals("I just modified this forum title", 
 					response.getPayload().getTitle());
 			Assert.assertEquals("Conde Nast", response.getPayload().getCreatedBy());
 		}
@@ -360,6 +372,33 @@ public class ChatterForumServiceRequestHandlerTest {
 		if (response.getPayload() != null) {
 			Assert.assertEquals(this.forum.getForumId(), response.getPayload().getForumId());
 			Assert.assertTrue(response.getPayload().getCommentIds().size() > 0);
+		}
+	}
+	
+	/**
+	 * Test removing a comment (comment id) from a forum object in Db
+	 */
+	public void testRemoveCommentRequest() {
+		System.out.println("ChatterForumService test: testRemoveCommentRequest");
+		this.testCtx.setFunctionName(ServiceOperations.REMOVE_COMMENT.toString());
+		
+		ForumServiceRequest<RemoveCommentRequest> request = new ForumServiceRequest<>();
+		request.setData(this.generateRemoveCommentRequest(this.forum.getForumId()));
+		
+		@SuppressWarnings("unchecked")
+		ForumServiceResponse<ChatterForum> response = (ForumServiceResponse<ChatterForum>)
+			handler.handleRequest(request, this.testCtx);
+		
+		/* Assertions */
+		Assert.assertTrue(response.getStatus());
+		Assert.assertFalse(response.getExceptionThrown());
+		Assert.assertNull(response.getExceptionMessage());
+		Assert.assertNotNull(response.getPayload());
+		Assert.assertEquals(ServiceMessages.OPERATION_SUCCESS.toString(), response.getMessage());
+		
+		if (response.getPayload() != null) {
+			Assert.assertEquals(this.forum.getForumId(), response.getPayload().getForumId());
+			Assert.assertNull(response.getPayload().getCommentIds());
 		}
 	}
 	

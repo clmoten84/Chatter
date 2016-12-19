@@ -155,4 +155,26 @@ public class RequestValidator {
 		
 		return validReq;
 	}
+	
+	/**
+	 * Validate a request to remove a comment id from Forum object
+	 * @param req the request to validate
+	 * @return
+	 */
+	public static boolean validateRemoveCommentRequest(RemoveCommentRequest req) {
+		boolean validReq = true;
+		
+		if (req != null) {
+			if (req.getForumId() == null || req.getForumId().isEmpty())
+				validReq = false;
+			
+			if (req.getCommentId() == null || req.getCommentId().isEmpty())
+				validReq = false;
+		}
+		else {
+			validReq = false;
+		}
+		
+		return validReq;
+	}
 }

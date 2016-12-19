@@ -8,6 +8,7 @@ import com.chatter.forumservice.requests.CreateForumRequest;
 import com.chatter.forumservice.requests.DeleteForumRequest;
 import com.chatter.forumservice.requests.QueryByCreatorRequest;
 import com.chatter.forumservice.requests.QueryByTitleRequest;
+import com.chatter.forumservice.requests.RemoveCommentRequest;
 import com.chatter.forumservice.requests.RetrieveForumRequest;
 import com.chatter.forumservice.requests.UpdateForumRequest;
 import com.chatter.forumservice.responses.ForumResultPage;
@@ -67,6 +68,23 @@ public interface ForumDAO {
 	 * @return the update Chatter Forum object
 	 */
 	public ChatterForum addCommentToForum(AddCommentRequest req) throws
+		RequestValidationException, AmazonServiceException,
+		AmazonClientException;
+	
+	/**
+	 * Update a Chatter Forum instance by removing an existing comment
+	 * id from the existing list of comment ids in a Chatter Forum
+	 * 
+	 * @param req the request containing all the data necessary to remove
+	 * a comment from a Chatter Forum objects comment id list
+	 * 
+	 * @return the updated Chatter Forum object
+	 * 
+	 * @throws RequestValidationException
+	 * @throws AmazonServiceException
+	 * @throws AmazonClientException
+	 */
+	public ChatterForum removeCommentFromForum(RemoveCommentRequest req) throws
 		RequestValidationException, AmazonServiceException,
 		AmazonClientException;
 	

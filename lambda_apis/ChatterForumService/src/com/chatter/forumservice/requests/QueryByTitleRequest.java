@@ -48,7 +48,7 @@ public class QueryByTitleRequest extends Request{
 	public String toString() {
 		return new StringBuilder()
 			.append("***** Query By Title request *****")
-			.append("title: ").append(this.title)
+			.append("\ntitle: ").append(this.title)
 			.toString();
 	}
 }
