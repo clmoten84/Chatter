@@ -151,8 +151,8 @@ public class ChatterForumServiceRequestHandlerTest {
 		this.testPingRequest();
 		this.testCreateForumRequest();
 		this.testRetrieveForumRequest();
-		//this.testQueryByCreatorRequest();
-		//this.testQueryByTitleRequest();
+		this.testQueryByCreatorRequest();
+		this.testQueryByTitleRequest();
 		this.testUpdateForumRequest();
 		this.testAddCommentRequest();
 		this.testRemoveCommentRequest();
@@ -269,14 +269,13 @@ public class ChatterForumServiceRequestHandlerTest {
 			
 			// Assert result page details
 			Assert.assertTrue(page.getResultCount() > 0);
-			Assert.assertNotNull(page.getLastEvaluatedKey());
+			Assert.assertNull(page.getLastEvaluatedKey());
 			Assert.assertFalse(page.getMoreResults());
 			
 			// Assert actual retrieved forum details
 			List<ChatterForum> forums = page.getPageResults();
 			Assert.assertNotNull(forums);
 			Assert.assertFalse(forums.isEmpty());
-			Assert.assertEquals(this.forum.getForumId(), forums.get(0).getForumId());
 			Assert.assertEquals(this.forum.getCreatedBy(), forums.get(0).getCreatedBy());
 		}
 	}
@@ -307,14 +306,13 @@ public class ChatterForumServiceRequestHandlerTest {
 			
 			// Assert result page details
 			Assert.assertTrue(page.getResultCount() > 0);
-			Assert.assertNotNull(page.getLastEvaluatedKey());
+			Assert.assertNull(page.getLastEvaluatedKey());
 			Assert.assertFalse(page.getMoreResults());
 			
 			// Assert actual retrieved forum details
 			List<ChatterForum> forums = page.getPageResults();
 			Assert.assertNotNull(forums);
 			Assert.assertFalse(forums.isEmpty());
-			Assert.assertEquals(this.forum.getForumId(), forums.get(0).getForumId());
 			Assert.assertEquals(this.forum.getTitle(), forums.get(0).getTitle());
 		}
 	}

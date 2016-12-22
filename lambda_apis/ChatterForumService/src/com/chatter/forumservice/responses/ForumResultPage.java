@@ -23,12 +23,19 @@ public class ForumResultPage {
 	public ForumResultPage() { }
 	
 	public ForumResultPage(List<ChatterForum> pageResults,
-			Map<String, AttributeValue> lastEvaluatedKey, int resultCount, 
-			boolean moreResults) {
+			Map<String, AttributeValue> lastEvaluatedKey, int resultCount) {
 		this.pageResults = pageResults;
 		this.lastEvaluatedKey = lastEvaluatedKey;
 		this.resultCount = resultCount;
-		this.moreResults = moreResults;
+		
+		// If the lastEvalutedKey is null, that indicates that the
+		// query or scan result set is complete. If lastEvaluatedKey
+		// is not null, then there are more results to retrieve from
+		// the database.
+		if(lastEvaluatedKey != null)
+			moreResults = true;
+		else
+			moreResults = false;
 	}
 
 	public List<ChatterForum> getPageResults() {

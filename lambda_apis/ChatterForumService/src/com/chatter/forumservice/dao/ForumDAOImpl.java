@@ -2,7 +2,6 @@ package com.chatter.forumservice.dao;
 
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -261,46 +260,11 @@ public class ForumDAOImpl implements ForumDAO{
 			
 			resultPage = dbMapper.queryPage(ChatterForum.class, query);
 			
-			//If a page of results was successfully retrieved...
-			if (resultPage != null && resultPage.getCount() > 0 &&
-					resultPage.getCount() < query.getLimit()) {
-				/*
-				 * This condition indicates that there are no more results
-				 * to be retrieved subsequent to this page of results. So
-				 * the moreResults flag in the ForumResultPage object is set
-				 * to false. This will inform the client that there are no
-				 * more results to retrieve for this query and not to make
-				 * an unnecessary request to retrieve anymore data.
-				 */
-				List<ChatterForum> forumResults = resultPage.getResults();
-				Map<String, AttributeValue> lastEvaluatedKey = resultPage.getLastEvaluatedKey();
-				
-				forumResultPage = new ForumResultPage(forumResults, lastEvaluatedKey, 
-						resultPage.getCount(), false);
-			}
-			else if (resultPage != null && resultPage.getCount() == 0) {
-				/*
-				 * This condition indicates that no results were returned 
-				 * from the query. This condition also sets the moreResults
-				 * flag in the ForumResultPage object to false.
-				 */
-				forumResultPage = new ForumResultPage(null, null, resultPage.getCount(),
-						false);
-			}
-			else {
-				/*
-				 * This condition indicates that more results need to be
-				 * retrieved to complete the query, so set the moreResults
-				 * flag in the ForumResultPage object to true. This will
-				 * inform the client that there are more results to retrieve
-				 * that match the query. The client will need to make another
-				 * request to retrieve the next page of results.
-				 */
-				List<ChatterForum> forumResults = resultPage.getResults();
-				Map<String, AttributeValue> lastEvaluatedKey = resultPage.getLastEvaluatedKey();
-				
-				forumResultPage = new ForumResultPage(forumResults, lastEvaluatedKey, 
-						resultPage.getCount(), true);
+			if (resultPage != null) {
+				forumResultPage = new ForumResultPage(
+						resultPage.getResults(),
+						resultPage.getLastEvaluatedKey(),
+						resultPage.getCount());
 			}
 		}
 		else {
@@ -346,46 +310,11 @@ public class ForumDAOImpl implements ForumDAO{
 			
 			queryResultPage = dbMapper.queryPage(ChatterForum.class, query);
 			
-			//If a page of results was successfully retrieved...
-			if (queryResultPage != null && queryResultPage.getCount() > 0 &&
-					queryResultPage.getCount() < query.getLimit()) {
-				/*
-				 * This condition indicates that there are no more results
-				 * to be retrieved subsequent to this page of results. So
-				 * the moreResults flag in the ForumResultPage object is set
-				 * to false. This will inform the client that there are no
-				 * more results to retrieve for this query and not to make
-				 * an unnecessary request to retrieve anymore data.
-				 */
-				List<ChatterForum> forumResults = queryResultPage.getResults();
-				Map<String, AttributeValue> lastEvaluatedKey = queryResultPage.getLastEvaluatedKey();
-				
-				forumResultPage = new ForumResultPage(forumResults, lastEvaluatedKey, 
-						queryResultPage.getCount(), false);
-			}
-			else if (queryResultPage != null && queryResultPage.getCount() == 0) {
-				/*
-				 * This condition indicates that no results were returned 
-				 * from the query. This condition also sets the moreResults
-				 * flag in the ForumResultPage object to false.
-				 */
-				forumResultPage = new ForumResultPage(null, null, queryResultPage.getCount(),
-						false);
-			}
-			else {
-				/*
-				 * This condition indicates that more results need to be
-				 * retrieved to complete the query, so set the moreResults
-				 * flag in the ForumResultPage object to true. This will
-				 * inform the client that there are more results to retrieve
-				 * that match the query. The client will need to make another
-				 * request to retrieve the next page of results.
-				 */
-				List<ChatterForum> forumResults = queryResultPage.getResults();
-				Map<String, AttributeValue> lastEvaluatedKey = queryResultPage.getLastEvaluatedKey();
-				
-				forumResultPage = new ForumResultPage(forumResults, lastEvaluatedKey, 
-						queryResultPage.getCount(), true);
+			if (queryResultPage != null) {
+				forumResultPage = new ForumResultPage(
+						queryResultPage.getResults(),
+						queryResultPage.getLastEvaluatedKey(),
+						queryResultPage.getCount());
 			}
 		}
 		else {
