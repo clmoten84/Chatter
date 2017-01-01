@@ -36,15 +36,14 @@ public class ForumDAOImpl implements ForumDAO{
 	
 	public ForumDAOImpl() {
 		//Create DynamoDB client
-		ProfileCredentialsProvider credProvider = new ProfileCredentialsProvider();
-		dbClient = new AmazonDynamoDBClient(credProvider);
+		dbClient = new AmazonDynamoDBClient();
 		
 		//Set DB end-point from properties file
 		propsResolver = new PropertiesResolver("service.properties");
 		dbClient.setEndpoint(propsResolver.getProperty("aws.dynamodb.endpoint"));
 		
 		//Create DB mapper object
-		dbMapper = new DynamoDBMapper(dbClient, credProvider);
+		dbMapper = new DynamoDBMapper(dbClient);
 	}
 
 	/**
