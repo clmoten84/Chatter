@@ -9,36 +9,26 @@ import com.chatter.forumservice.dao.ForumDAO;
 import com.chatter.forumservice.dao.ForumDAOImpl;
 import com.chatter.forumservice.exceptions.MissingOperationException;
 import com.chatter.forumservice.exceptions.RequestValidationException;
-import com.chatter.forumservice.requests.AddCommentRequest;
-import com.chatter.forumservice.requests.CreateForumRequest;
-import com.chatter.forumservice.requests.DeleteForumRequest;
+import com.chatter.forumservice.model.ChatterForum;
 import com.chatter.forumservice.requests.ForumServiceRequest;
-import com.chatter.forumservice.requests.PingRequest;
-import com.chatter.forumservice.requests.QueryByCreatorRequest;
-import com.chatter.forumservice.requests.QueryByTitleRequest;
-import com.chatter.forumservice.requests.RemoveCommentRequest;
 import com.chatter.forumservice.requests.Request;
-import com.chatter.forumservice.requests.RetrieveForumRequest;
-import com.chatter.forumservice.requests.UpdateForumRequest;
 import com.chatter.forumservice.responses.ForumResultPage;
 import com.chatter.forumservice.responses.ForumServiceResponse;
 import com.chatter.forumservice.responses.ServicePropsResponse;
 import com.chatter.forumservice.util.ServiceMessages;
 import com.chatter.forumservice.util.ServiceOperations;
-import com.chatter.model.ChatterForum;
 
-public class ChatterForumServiceRequestHandler implements RequestHandler<Object, Object> {
+public class ChatterForumServiceRequestHandler implements RequestHandler<ForumServiceRequest<Request>, 
+	ForumServiceResponse<? extends Object>> {
 	
 	private ForumDAO forumDao = new ForumDAOImpl();
 	
     @Override
-    public ForumServiceResponse<? extends Object> handleRequest(Object input, Context context) {
+    public ForumServiceResponse<? extends Object> handleRequest(ForumServiceRequest<Request> input, Context context) {
     	LambdaLogger logger = context.getLogger();
     	
         if(input != null) {
-        	@SuppressWarnings("unchecked")
-        	ForumServiceRequest<Request> req = (ForumServiceRequest<Request>) input;
-        	Request reqData = req.getData();
+        	Request reqData = input.getData();
         	
         	//Define the response to be returned upon error conditions
         	ForumServiceResponse<Void> response = new ForumServiceResponse<>();
@@ -48,23 +38,23 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
         		if (operation != null) {
 	        		switch(operation) {
 	        			case CREATE:
-	        				return this.createForum(req, context);
+	        				return this.createForum(input, context);
 	        			case QUERY_BY_ID:
-	        				return this.retrieveForumById(req, context);
+	        				return this.retrieveForumById(input, context);
 	        			case QUERY_BY_CREATOR:
-	        				return this.queryByCreator(req, context);
+	        				return this.queryByCreator(input, context);
 	        			case QUERY_BY_TITLE:
-	        				return this.queryByTitle(req, context);
+	        				return this.queryByTitle(input, context);
 	        			case UPDATE:
-	        				return this.updateForum(req, context);
+	        				return this.updateForum(input, context);
 	        			case ADD_COMMENT:
-	        				return this.addCommentToForum(req, context);
+	        				return this.addCommentToForum(input, context);
 	        			case REMOVE_COMMENT:
-	        				return this.removeCommentFromForum(req, context);
+	        				return this.removeCommentFromForum(input, context);
 	        			case DELETE:
-	        				return this.deleteForum(req, context);
+	        				return this.deleteForum(input, context);
 	        			case PING:
-	        				return this.pingService(req, context);
+	        				return this.pingService(input, context);
 	        			default:
 	        				throw new UnsupportedOperationException("ERROR! The service "
 	        						+ "does not support operation: " + operation.toString());
@@ -154,7 +144,7 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
     		Context context) throws RequestValidationException, AmazonServiceException,
     			AmazonClientException {
     	ForumServiceResponse<ChatterForum> response = new ForumServiceResponse<>();
-    	CreateForumRequest request = (CreateForumRequest) input.getData();
+    	Request request = input.getData();
     	
     	//Log request info to context logger
     	LambdaLogger logger = context.getLogger();
@@ -184,7 +174,7 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
     		Context context) throws RequestValidationException, AmazonServiceException,
     			AmazonClientException {
     	ForumServiceResponse<ChatterForum> response = new ForumServiceResponse<>();
-    	RetrieveForumRequest request = (RetrieveForumRequest) input.getData();
+    	Request request = input.getData();
     	
     	//Log request info to context logger
     	LambdaLogger logger = context.getLogger();
@@ -213,7 +203,7 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
     		Context context) throws RequestValidationException, AmazonServiceException,
     			AmazonClientException {
     	ForumServiceResponse<ChatterForum> response = new ForumServiceResponse<>();
-    	UpdateForumRequest request = (UpdateForumRequest) input.getData();
+    	Request request = input.getData();
     	
     	// Log request info to lambda logger
     	LambdaLogger logger = context.getLogger();
@@ -244,7 +234,7 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
     		Context context) throws RequestValidationException, AmazonServiceException,
     			AmazonClientException {
 		ForumServiceResponse<ChatterForum> response = new ForumServiceResponse<>();
-		AddCommentRequest request = (AddCommentRequest) input.getData();
+		Request request = input.getData();
 		
 		// Log request info to lambda logger
 		LambdaLogger logger = context.getLogger();
@@ -275,7 +265,7 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
     		input, Context context) throws RequestValidationException, AmazonServiceException,
     			AmazonClientException {
     	ForumServiceResponse<ChatterForum> response = new ForumServiceResponse<>();
-		RemoveCommentRequest request = (RemoveCommentRequest) input.getData();
+		Request request = input.getData();
 		
 		// Log request info to lambda logger
 		LambdaLogger logger = context.getLogger();
@@ -298,8 +288,6 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
      * 
      * @param input the request to process
      * @param context lambda context object
-     * @return ForumServiceResponse
-     * 
      * @throws RequestValidationException
      * @throws AmazonServiceException
      * @throws AmazonClientException
@@ -308,7 +296,7 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
     	Context context) throws RequestValidationException, AmazonServiceException,
     		AmazonClientException {
     	ForumServiceResponse<ForumResultPage> response = new ForumServiceResponse<>();
-    	QueryByCreatorRequest request = (QueryByCreatorRequest) input.getData();
+    	Request request = input.getData();
     	
     	// Log request info to lambda logger
     	LambdaLogger logger = context.getLogger();
@@ -341,7 +329,7 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
     		Context context) throws RequestValidationException, AmazonServiceException,
     			AmazonClientException {
     	ForumServiceResponse<ForumResultPage> response = new ForumServiceResponse<>();
-    	QueryByTitleRequest request = (QueryByTitleRequest) input.getData();
+    	Request request = input.getData();
     	
     	// Log request info to lambda logger
     	LambdaLogger logger = context.getLogger();
@@ -371,7 +359,7 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
     		Context context) throws RequestValidationException, AmazonServiceException,
     			AmazonClientException {
     	ForumServiceResponse<Void> response = new ForumServiceResponse<>();
-    	DeleteForumRequest request = (DeleteForumRequest) input.getData();
+    	Request request = input.getData();
     	
     	// Log request info to lambda logger
     	LambdaLogger logger = context.getLogger();
@@ -400,7 +388,7 @@ public class ChatterForumServiceRequestHandler implements RequestHandler<Object,
     public ForumServiceResponse<ServicePropsResponse> pingService(ForumServiceRequest<Request> input, 
     		Context context) {
     	ForumServiceResponse<ServicePropsResponse> response = new ForumServiceResponse<>();
-    	PingRequest request = (PingRequest) input.getData();
+    	Request request = input.getData();
     	
     	// Log request info to lambda logger
     	LambdaLogger logger = context.getLogger();

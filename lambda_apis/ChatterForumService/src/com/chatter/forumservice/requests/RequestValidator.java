@@ -16,160 +16,133 @@ package com.chatter.forumservice.requests;
  * validateQueryByTitleRequest
  */
 public class RequestValidator {
-
-	/**
-	 * Validate a request to create and save a Forum instance to the
-	 * database
-	 * @param req the request object to validate
-	 * @return
-	 */
-	public static boolean validateCreateForumRequest(CreateForumRequest req) {
-		boolean validReq = true;
-		
-		if(req != null) {
-			if(req.getCreatedBy() == null || req.getCreatedBy().isEmpty())
-				validReq = false;
-			if(req.getTitle() == null || req.getTitle().isEmpty())
-				validReq = false;
-		}
-		else {
-			validReq = false;
-		}
-		
-		return validReq;
-	}
 	
 	/**
-	 * Validate a request to retrieve a Forum instance from the database
-	 * @param req the request object to validate
-	 * @return
-	 */
-	public static boolean validateRetrieveForumRequest(RetrieveForumRequest req) {
-		boolean validReq = true;
-		
-		if(req != null) {
-			if(req.getForumId() == null || req.getForumId().isEmpty())
-				validReq = false;
-		}
-		else {
-			validReq = false;
-		}
-		
-		return validReq;
-	}
-	
-	/**
-	 * Validate a request to update a Forum instance that exists in the database
-	 * @param req the request object to validate
-	 * @return
-	 */
-	public static boolean validateUpdateForumRequest(UpdateForumRequest req) {
-		boolean validReq = true;
-		
-		if(req != null) {
-			if(req.getForumId() == null || req.getForumId().isEmpty())
-				validReq = false;
-		}
-		else {
-			validReq = false;
-		}
-		
-		return validReq;
-	}
-	
-	/**
-	 * Validate a request to delete a forum instance that exists in the database
-	 * @param req the request object to validate
-	 * @return
-	 */
-	public static boolean validateDeleteForumRequest(DeleteForumRequest req) {
-		boolean validReq = true;
-		
-		if(req != null) {
-			if(req.getForumId() == null || req.getForumId().isEmpty())
-				validReq = false;
-		}
-		else {
-			validReq = false;
-		}
-		
-		return validReq;
-	}
-	
-	/**
-	 * Validate a request to query Forum table using created_by attribute
-	 * @param req the request object to validate
-	 * @return
-	 */
-	public static boolean validateQueryByCreatorRequest(QueryByCreatorRequest req) {
-		boolean validReq = true;
-		
-		if(req != null) {
-			if(req.getCreatedBy() == null || req.getCreatedBy().isEmpty())
-				validReq = false;
-		}
-		else {
-			validReq = false;
-		}
-		
-		return validReq;
-	}
-	
-	/**
-	 * Validate a request to query Forum table using title attribute
-	 * @param req the request object to validate
-	 * @return
-	 */
-	public static boolean validateQueryByTitleRequest(QueryByTitleRequest req) {
-		boolean validReq = true;
-		
-		if(req != null) {
-			if(req.getTitle() == null || req.getTitle().isEmpty())
-				validReq = false;
-		}
-		else {
-			validReq = false;
-		}
-		
-		return validReq;
-	}
-	
-	/**
-	 * Validate a request to add a comment id to Forum object
-	 * @param req the request to validate
-	 * @return 
-	 */
-	public static boolean validateAddCommentRequest(AddCommentRequest req) {
-		boolean validReq = true;
-		
-		if (req != null) {
-			if (req.getForumId() == null || req.getForumId().isEmpty())
-				validReq = false;
-			
-			if (req.getCommentId() == null || req.getCommentId().isEmpty())
-				validReq = false;
-		}
-		else {
-			validReq = false;
-		}
-		
-		return validReq;
-	}
-	
-	/**
-	 * Validate a request to remove a comment id from Forum object
+	 * Validate a request to create and save a Forum object to the
+	 * database.
+	 * 
 	 * @param req the request to validate
 	 * @return
 	 */
-	public static boolean validateRemoveCommentRequest(RemoveCommentRequest req) {
+	public static boolean validateCreateForumRequest(Request req) {
 		boolean validReq = true;
 		
 		if (req != null) {
-			if (req.getForumId() == null || req.getForumId().isEmpty())
+			if (req.getArgs() != null) {
+				if (req.getArgs().get("createdBy") == null)
+					validReq = false;
+				
+				if (req.getArgs().get("title") == null)
+					validReq = false;
+			}
+			else {
 				validReq = false;
-			
-			if (req.getCommentId() == null || req.getCommentId().isEmpty())
+			}
+		}
+		else {
+			validReq = false;
+		}
+		
+		return validReq;
+	}
+	
+	/**
+	 * Validate a request to retrieve a Forum object from the database.
+	 * 
+	 * @param req the request to validate
+	 * @return
+	 */
+	public static boolean validateRetrieveForumRequest(Request req) {
+		boolean validReq = true;
+		
+		if (req != null) {
+			if (req.getArgs() != null) {
+				if (req.getArgs().get("forumId") == null) 
+					validReq = false;
+			}
+			else {
 				validReq = false;
+			}
+		}
+		else {
+			validReq = false;
+		}
+		
+		return validReq;
+	}
+	
+	/**
+	 * Validate a request to query the Forum table using the 
+	 * created_by attribute.
+	 * 
+	 * @param req the request to validate
+	 * @return
+	 */
+	public static boolean validateQueryByCreatorRequest(Request req) {
+		boolean validReq = true;
+		
+		if (req != null) {
+			if (req.getArgs() != null) {
+				if (req.getArgs().get("createdBy") == null)
+					validReq = false;
+			}
+			else {
+				validReq = false;
+			}
+		}
+		else {
+			validReq = false;
+		}
+		
+		return validReq;
+	}
+	
+	/**
+	 * Validate a request to query the Forum table by title attribute.
+	 * 
+	 * @param req the request to validate
+	 * @return
+	 */
+	public static boolean validateQueryByTitleRequest(Request req) {
+		boolean validReq = true;
+		
+		if (req != null) {
+			if (req.getArgs() != null) {
+				if (req.getArgs().get("title") == null)
+					validReq = false;
+			}
+			else {
+				validReq = false;
+			}
+		}
+		else {
+			validReq = false;
+		}
+		
+		return validReq;
+	}
+	
+	/**
+	 * Validate a request to add/remove a comment id to a Forum
+	 * object.
+	 * 
+	 * @param req the request to validate
+	 * @return
+	 */
+	public static boolean validateCommentRequest(Request req) {
+		boolean validReq = true;
+		
+		if (req != null) {
+			if (req.getArgs() != null) {
+				if (req.getArgs().get("forumId") == null)
+					validReq = false;
+				
+				if (req.getArgs().get("commentId") == null)
+					validReq = false;
+			}
+			else {
+				validReq = false;
+			}
 		}
 		else {
 			validReq = false;

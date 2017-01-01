@@ -113,4 +113,16 @@ public class TestContext implements Context {
             System.err.println(message);
         } 
     }
+
+	@Override
+	public String getFunctionVersion() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getInvokedFunctionArn() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

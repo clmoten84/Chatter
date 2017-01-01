@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.chatter.model.ChatterForum;
+import com.chatter.forumservice.model.ChatterForum;
 
 /**
  * Encapsulates query page results for return to client
@@ -15,7 +15,7 @@ import com.chatter.model.ChatterForum;
  * resultCount: the count of ChatterForum objects returned in response
  */
 public class ForumResultPage {
-	private List<ChatterForum> pageResults;
+	private List<com.chatter.forumservice.model.ChatterForum> pageResults;
 	private Map<String, AttributeValue> lastEvaluatedKey;
 	private int resultCount;
 	private boolean moreResults;

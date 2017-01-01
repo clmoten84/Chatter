@@ -1,28 +1,22 @@
 package com.chatter.forumservice;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.chatter.forumservice.handler.ChatterForumServiceRequestHandler;
-import com.chatter.forumservice.requests.AddCommentRequest;
-import com.chatter.forumservice.requests.CreateForumRequest;
-import com.chatter.forumservice.requests.DeleteForumRequest;
+import com.chatter.forumservice.model.ChatterForum;
 import com.chatter.forumservice.requests.ForumServiceRequest;
-import com.chatter.forumservice.requests.PingRequest;
-import com.chatter.forumservice.requests.QueryByCreatorRequest;
-import com.chatter.forumservice.requests.QueryByTitleRequest;
-import com.chatter.forumservice.requests.RemoveCommentRequest;
-import com.chatter.forumservice.requests.RetrieveForumRequest;
-import com.chatter.forumservice.requests.UpdateForumRequest;
+import com.chatter.forumservice.requests.Request;
 import com.chatter.forumservice.responses.ForumResultPage;
 import com.chatter.forumservice.responses.ForumServiceResponse;
 import com.chatter.forumservice.responses.ServicePropsResponse;
 import com.chatter.forumservice.util.ServiceMessages;
 import com.chatter.forumservice.util.ServiceOperations;
-import com.chatter.model.ChatterForum;
 
 /**
  * A simple test harness for locally invoking your Lambda function handler.
@@ -51,89 +45,187 @@ public class ChatterForumServiceRequestHandlerTest {
 	/************** Sample Request generation ************/
 	
 	/**
-	 * Generate a sample CreateForumRequest object
+	 * Generate a sample Request to create a new Forum object
+	 * and save to the database.
+	 * 
 	 * @param forumIn
-	 * @return CreateForumRequest
+	 * @return Request
 	 */
-	private CreateForumRequest generateCreateForumRequest(ChatterForum forumIn) {
-		CreateForumRequest request = new CreateForumRequest(forumIn.getCreatedBy(), 
-				forumIn.getTitle());
+	private Request generateCreateForumRequest(ChatterForum forumIn) {
+		Request request = new Request();
+		request.setOperation(ServiceOperations.CREATE);
+		request.setReqDate(new Date().getTime());
+		
+		// Generate map of custom args
+		Map<String, String> args = new HashMap<>();
+		args.put("createdBy", forumIn.getCreatedBy());
+		args.put("title", forumIn.getTitle());
+		
+		request.setArgs(args);
 		return request;
 	}
 	
 	/**
-	 * Generate a sample RetrieveForumRequest object
+	 * Generate a sample Request to retrieve a Forum object
+	 * from the database.
+	 * 
 	 * @param forumId
-	 * @return RetrieveForumRequest
+	 * @return Request
 	 */
-	private RetrieveForumRequest generateRetrieveForumRequest(String forumId) {
-		return new RetrieveForumRequest(forumId);
+	private Request generateRetrieveForumRequest(String forumId) {
+		Request request = new Request();
+		request.setOperation(ServiceOperations.QUERY_BY_ID);
+		request.setReqDate(new Date().getTime());
+		
+		// Generate map of custom args
+		Map<String, String> args = new HashMap<>();
+		args.put("forumId", forumId);
+		
+		request.setArgs(args);
+		return request;
 	}
 	
 	/**
-	 * Generate a sample QueryByCreatorRequest object
+	 * Generate a sample Request to query the Forum table using
+	 * the created_by attribute value.
+	 * 
 	 * @param createdBy
-	 * @return QueryByCreatorRequest
+	 * @return Request
 	 */
-	private QueryByCreatorRequest generateQueryByCreatorRequest(String createdBy) {
-		//Set date conditions to be from two weeks ago to right now
-		final long DAYS_IN_MS = 1000 * 60 * 60 * 24;
-		long rightNow = new Date().getTime();
-		long twoWeeksAgo = rightNow - (14 * DAYS_IN_MS);
-		return new QueryByCreatorRequest("Conde Nast", null, twoWeeksAgo, rightNow);
+	private Request generateQueryByCreatorRequest(String createdBy) {
+		Request request = new Request();
+		request.setOperation(ServiceOperations.QUERY_BY_CREATOR);
+		request.setReqDate(new Date().getTime());
+		
+		// Generate a map of custom args
+		Map<String, String> args = new HashMap<>();
+		args.put("createdBy", createdBy);
+		
+		// Set date conditions to be from two weeks ago to right now
+		final long DAYS_IN_MS = 1000 * 60 * 60 *24;
+		Long rightNow = new Date().getTime();
+		Long twoWeeksAgo = rightNow - (14 * DAYS_IN_MS);
+		args.put("timeStampTo", rightNow.toString());
+		args.put("timeStampFrom", twoWeeksAgo.toString());
+		
+		request.setArgs(args);
+		return request;
 	}
 	
 	/**
-	 * Generate a sample QueryByTitleRequest object
+	 * Generate a sample Request to query the Forum table using 
+	 * the title attribute.
+	 * 
 	 * @param title
-	 * @return QueryByTitleRequest
+	 * @return Request
 	 */
-	private QueryByTitleRequest generateQueryByTitleRequest(String title) {
-		return new QueryByTitleRequest("Just a Test Forum", null);
+	private Request generateQueryByTitleRequest(String title) {
+		Request request = new Request();
+		request.setOperation(ServiceOperations.QUERY_BY_TITLE);
+		request.setReqDate(new Date().getTime());
+		
+		// Generate a map of custom args
+		Map<String, String> args = new HashMap<>();
+		args.put("title", title);
+		
+		request.setArgs(args);
+		return request;
 	}
 	
 	/**
-	 * Generate a sample UpdateForumRequest object
+	 * Generate a Request to update an existing Forum object
+	 * in the database.
+	 * 
 	 * @param forumId
-	 * @return UpdateForumRequest
+	 * @return Request
 	 */
-	private UpdateForumRequest generateUpdateForumRequest(String forumId) {
-		return new UpdateForumRequest(forumId, "I just modified this forum title");
+	private Request generateUpdateForumRequest(String forumId) {
+		Request request = new Request();
+		request.setOperation(ServiceOperations.UPDATE);
+		request.setReqDate(new Date().getTime());
+		
+		// Generate a map of custom args
+		Map<String, String> args = new HashMap<>();
+		args.put("forumId", forumId);
+		args.put("titleUpdate", "I just modified this forum title");
+		
+		request.setArgs(args);
+		return request;
 	}
 	
 	/**
-	 * Generate a sample AddCommentRequest object
+	 * Generate a sample Request to add a comment id to a Forum
+	 * object in the database.
+	 * 
 	 * @param forumId
-	 * @return AddCommentRequest
+	 * @return Request
 	 */
-	private AddCommentRequest generateAddCommentRequest(String forumId) {
-		return new AddCommentRequest(forumId, "1234-TEST");
+	private Request generateAddCommentRequest(String forumId) {
+		Request request = new Request();
+		request.setOperation(ServiceOperations.ADD_COMMENT);
+		request.setReqDate(new Date().getTime());
+		
+		// Generate a map of custom args
+		Map<String, String> args = new HashMap<>();
+		args.put("forumId", forumId);
+		args.put("commentId", "1234-TEST");
+		
+		request.setArgs(args);
+		return request;
 	}
 	
 	/**
-	 * Generate a sample RemoveCommentRequest object
+	 * Generate a sample Request to remove a comment id from a Forum
+	 * object in the database.
+	 * 
 	 * @param forumId
-	 * @return RemoveCommentRequest
+	 * @return Request
 	 */
-	private RemoveCommentRequest generateRemoveCommentRequest(String forumId) {
-		return new RemoveCommentRequest(forumId, "1234-TEST");
+	private Request generateRemoveCommentRequest(String forumId) {
+		Request request = new Request();
+		request.setOperation(ServiceOperations.REMOVE_COMMENT);
+		request.setReqDate(new Date().getTime());
+		
+		// Generate a map of custom args
+		Map<String, String> args = new HashMap<>();
+		args.put("forumId", forumId);
+		args.put("commentId", "1234-TEST");
+		
+		request.setArgs(args);
+		return request;
 	}
 	
 	/**
-	 * Generate a sample DeleteForumRequest object
+	 * Generate a sample Request to delete a Forum object
+	 * from the database.
+	 * 
 	 * @param forumId
-	 * @return DeleteForumRequest
+	 * @return Request
 	 */
-	private DeleteForumRequest generateDeleteForumRequest(String forumId) {
-		return new DeleteForumRequest(forumId);
+	private Request generateDeleteForumRequest(String forumId) {
+		Request request = new Request();
+		request.setOperation(ServiceOperations.DELETE);
+		request.setReqDate(new Date().getTime());
+		
+		// Generate a map of custom args
+		Map<String, String> args = new HashMap<>();
+		args.put("forumId", forumId);
+		
+		request.setArgs(args);
+		return request;
 	}
 	
 	/**
-	 * Generate a sample PingRequest object
-	 * @return PingRequest
+	 * Generate a sample Request to ping the service and retrieve
+	 * service information.
+	 * 
+	 * @return Request
 	 */
-	private PingRequest generatePingRequest() {
-		return new PingRequest();
+	private Request generatePingRequest() {
+		Request request = new Request();
+		request.setOperation(ServiceOperations.PING);
+		request.setReqDate(new Date().getTime());
+		return request;
 	}
 
 	/****************** Tests *****************/
@@ -167,7 +259,7 @@ public class ChatterForumServiceRequestHandlerTest {
 		System.out.println("ChatterForumService test: testPingRequest");
 		this.testCtx.setFunctionName(ServiceOperations.PING.toString());
 		
-		ForumServiceRequest<PingRequest> request = new ForumServiceRequest<>();
+		ForumServiceRequest<Request> request = new ForumServiceRequest<>();
 		request.setData(this.generatePingRequest());
 		
 		@SuppressWarnings("unchecked")
@@ -194,7 +286,7 @@ public class ChatterForumServiceRequestHandlerTest {
 		System.out.println("ChatterForumService test: testCreateForumRequest");
 		this.testCtx.setFunctionName(ServiceOperations.CREATE.toString());
 		
-		ForumServiceRequest<CreateForumRequest> request = new ForumServiceRequest<>();
+		ForumServiceRequest<Request> request = new ForumServiceRequest<>();
 		request.setData(this.generateCreateForumRequest(this.createForum()));
 		
 		@SuppressWarnings("unchecked")
@@ -223,7 +315,7 @@ public class ChatterForumServiceRequestHandlerTest {
 		System.out.println("ChatterForumService test: testRetrieveForumRequest");
 		this.testCtx.setFunctionName(ServiceOperations.QUERY_BY_ID.toString());
 		
-		ForumServiceRequest<RetrieveForumRequest> request = new ForumServiceRequest<>();
+		ForumServiceRequest<Request> request = new ForumServiceRequest<>();
 		request.setData(this.generateRetrieveForumRequest(this.forum.getForumId()));
 		
 		@SuppressWarnings("unchecked")
@@ -250,7 +342,7 @@ public class ChatterForumServiceRequestHandlerTest {
 		System.out.println("ChatterForumService test: testQueryByCreatorRequest");
 		this.testCtx.setFunctionName(ServiceOperations.QUERY_BY_CREATOR.toString());
 		
-		ForumServiceRequest<QueryByCreatorRequest> request = new ForumServiceRequest<>();
+		ForumServiceRequest<Request> request = new ForumServiceRequest<>();
 		request.setData(this.generateQueryByCreatorRequest("Conde Nast"));
 		
 		@SuppressWarnings("unchecked")
@@ -287,8 +379,8 @@ public class ChatterForumServiceRequestHandlerTest {
 		System.out.println("ChatterForumService test: testQueryByTitleRequest");
 		this.testCtx.setFunctionName(ServiceOperations.QUERY_BY_TITLE.toString());
 		
-		ForumServiceRequest<QueryByTitleRequest> request = new ForumServiceRequest<>();
-		request.setData(this.generateQueryByTitleRequest("Conde Nast"));
+		ForumServiceRequest<Request> request = new ForumServiceRequest<>();
+		request.setData(this.generateQueryByTitleRequest("Just a Test Forum"));
 		
 		@SuppressWarnings("unchecked")
 		ForumServiceResponse<ForumResultPage> response = (ForumServiceResponse<ForumResultPage>)
@@ -324,7 +416,7 @@ public class ChatterForumServiceRequestHandlerTest {
 		System.out.println("ChatterForumService test: testUpdateForumRequest");
 		this.testCtx.setFunctionName(ServiceOperations.UPDATE.toString());
 		
-		ForumServiceRequest<UpdateForumRequest> request = new ForumServiceRequest<>();
+		ForumServiceRequest<Request> request = new ForumServiceRequest<>();
 		request.setData(this.generateUpdateForumRequest(this.forum.getForumId()));
 		
 		@SuppressWarnings("unchecked")
@@ -353,7 +445,7 @@ public class ChatterForumServiceRequestHandlerTest {
 		System.out.println("ChatterForumService test: testAddCommentRequest");
 		this.testCtx.setFunctionName(ServiceOperations.ADD_COMMENT.toString());
 		
-		ForumServiceRequest<AddCommentRequest> request = new ForumServiceRequest<>();
+		ForumServiceRequest<Request> request = new ForumServiceRequest<>();
 		request.setData(this.generateAddCommentRequest(this.forum.getForumId()));
 		
 		@SuppressWarnings("unchecked")
@@ -380,7 +472,7 @@ public class ChatterForumServiceRequestHandlerTest {
 		System.out.println("ChatterForumService test: testRemoveCommentRequest");
 		this.testCtx.setFunctionName(ServiceOperations.REMOVE_COMMENT.toString());
 		
-		ForumServiceRequest<RemoveCommentRequest> request = new ForumServiceRequest<>();
+		ForumServiceRequest<Request> request = new ForumServiceRequest<>();
 		request.setData(this.generateRemoveCommentRequest(this.forum.getForumId()));
 		
 		@SuppressWarnings("unchecked")
@@ -407,7 +499,7 @@ public class ChatterForumServiceRequestHandlerTest {
 		System.out.println("ChatterForumService test: testDeleteForumRequest");
 		this.testCtx.setFunctionName(ServiceOperations.DELETE.toString());
 		
-		ForumServiceRequest<DeleteForumRequest> request = new ForumServiceRequest<>();
+		ForumServiceRequest<Request> request = new ForumServiceRequest<>();
 		request.setData(this.generateDeleteForumRequest(this.forum.getForumId()));
 		
 		@SuppressWarnings("unchecked")

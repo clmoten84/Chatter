@@ -3,17 +3,10 @@ package com.chatter.forumservice.dao;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.chatter.forumservice.exceptions.RequestValidationException;
-import com.chatter.forumservice.requests.AddCommentRequest;
-import com.chatter.forumservice.requests.CreateForumRequest;
-import com.chatter.forumservice.requests.DeleteForumRequest;
-import com.chatter.forumservice.requests.QueryByCreatorRequest;
-import com.chatter.forumservice.requests.QueryByTitleRequest;
-import com.chatter.forumservice.requests.RemoveCommentRequest;
-import com.chatter.forumservice.requests.RetrieveForumRequest;
-import com.chatter.forumservice.requests.UpdateForumRequest;
+import com.chatter.forumservice.model.ChatterForum;
+import com.chatter.forumservice.requests.Request;
 import com.chatter.forumservice.responses.ForumResultPage;
 import com.chatter.forumservice.responses.ServicePropsResponse;
-import com.chatter.model.ChatterForum;
 
 /**
  * Contains methods for accessing Forum data in the database.
@@ -30,7 +23,7 @@ public interface ForumDAO {
 	 * 
 	 * @return the Chatter Forum that was created
 	 */
-	public ChatterForum createForum(CreateForumRequest req) throws
+	public ChatterForum createForum(Request req) throws
 		RequestValidationException, AmazonServiceException,
 		AmazonClientException;
 	
@@ -42,7 +35,7 @@ public interface ForumDAO {
 	 * 
 	 * @return the retrieve Chatter Forum object
 	 */
-	public ChatterForum retrieveForumById(RetrieveForumRequest req) throws
+	public ChatterForum retrieveForumById(Request req) throws
 		RequestValidationException, AmazonServiceException,
 		AmazonClientException;
 	
@@ -54,7 +47,7 @@ public interface ForumDAO {
 	 * 
 	 * @return the updated Chatter Forum object
 	 */
-	public ChatterForum updateForum(UpdateForumRequest req) throws
+	public ChatterForum updateForum(Request req) throws
 		RequestValidationException, AmazonServiceException,
 		AmazonClientException;
 	
@@ -67,7 +60,7 @@ public interface ForumDAO {
 	 * 
 	 * @return the update Chatter Forum object
 	 */
-	public ChatterForum addCommentToForum(AddCommentRequest req) throws
+	public ChatterForum addCommentToForum(Request req) throws
 		RequestValidationException, AmazonServiceException,
 		AmazonClientException;
 	
@@ -84,7 +77,7 @@ public interface ForumDAO {
 	 * @throws AmazonServiceException
 	 * @throws AmazonClientException
 	 */
-	public ChatterForum removeCommentFromForum(RemoveCommentRequest req) throws
+	public ChatterForum removeCommentFromForum(Request req) throws
 		RequestValidationException, AmazonServiceException,
 		AmazonClientException;
 	
@@ -96,7 +89,7 @@ public interface ForumDAO {
 	 * 
 	 * @return a flag indicating operation success
 	 */
-	public boolean deleteForum(DeleteForumRequest req) throws 
+	public boolean deleteForum(Request req) throws 
 		RequestValidationException, AmazonServiceException,
 		AmazonClientException;
 	
@@ -109,7 +102,7 @@ public interface ForumDAO {
 	 * 
 	 * @return a ForumResultPage object 
 	 */
-	public ForumResultPage queryByCreator(QueryByCreatorRequest req) throws
+	public ForumResultPage queryByCreator(Request req) throws
 		RequestValidationException, AmazonServiceException,
 		AmazonClientException;
 	
@@ -122,7 +115,7 @@ public interface ForumDAO {
 	 * 
 	 * @return a ForumResultPage object
 	 */
-	public ForumResultPage queryByTitle(QueryByTitleRequest req) throws 
+	public ForumResultPage queryByTitle(Request req) throws 
 		RequestValidationException, AmazonServiceException,
 		AmazonClientException;
 	
