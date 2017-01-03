@@ -1,4 +1,4 @@
-package com.chatter.flagservice;
+package com.chatter.flagservice.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
