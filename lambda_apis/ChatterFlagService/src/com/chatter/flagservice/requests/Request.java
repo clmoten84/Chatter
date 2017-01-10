@@ -52,4 +52,19 @@ public class Request {
 	public void setArgs(Map<String, String> args) {
 		this.args = args;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("***** SERVICE REQUEST DATA *****");
+		builder.append("Operation: ").append(this.operation.toString());
+		builder.append("Request Date: ").append(this.reqDate);
+		builder.append("Arguments:");
+		
+		for (String key : this.args.keySet()) {
+			builder.append("\t").append(key).append(": ").append(this.args.get(key));
+		}
+		
+		return builder.toString();
+	}
 }
