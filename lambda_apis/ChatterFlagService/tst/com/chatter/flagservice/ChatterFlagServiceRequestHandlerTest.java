@@ -29,17 +29,4 @@ public class ChatterFlagServiceRequestHandlerTest {
 
         return ctx;
     }
-
-    @Test
-    public void testChatterFlagServiceRequestHandler() {
-        ChatterFlagServiceRequestHandler handler = new ChatterFlagServiceRequestHandler();
-        Context ctx = createContext();
-
-        Object output = handler.handleRequest(input, ctx);
-
-        // TODO: validate output here if needed.
-        if (output != null) {
-            System.out.println(output.toString());
-        }
-    }
 }

@@ -27,7 +27,7 @@ RequestHandler<FlagServiceRequest<Request>, FlagServiceResponse<? extends Object
     public FlagServiceResponse<? extends Object> handleRequest(FlagServiceRequest<Request>input, 
     		Context context) {
     	// Retrieve logger
-    	LambdaLogger log = context.getLogger();
+    	LambdaLogger logger = context.getLogger();
     	
     	if (input != null) {
     		Request reqData = input.getData();
@@ -45,11 +45,11 @@ RequestHandler<FlagServiceRequest<Request>, FlagServiceResponse<? extends Object
     					case CREATE:
     						return this.createFlag(input, context);
     					case RETRIEVE:
-    						break;
+    						return this.retrieveFlag(input, context);
     					case UPDATE:
-    						break;
+    						return this.updateFlag(input, context);
     					case DELETE:
-    						break;
+    						return this.deleteFlag(input, context);
     					case PING:
     						return this.pingService(input, context);
 						default:
@@ -63,22 +63,76 @@ RequestHandler<FlagServiceRequest<Request>, FlagServiceResponse<? extends Object
     			}
     		}
     		catch (MissingOperationException moe) {
+    			// Set error response and return
+    			response.setPayload(null);
+    			response.setStatus(false);
+    			response.setExceptionThrown(true);
+    			response.setMessage(ServiceMessages.MISSING_OPERATION.toString());
     			
+    			String exceptionMessage = this.compileExceptionMessage(moe);
+    			response.setExceptionMessage(exceptionMessage);
+    			logger.log(exceptionMessage);
+    			return response;
     		}
     		catch (UnsupportedOperationException uoe) {
+    			// Set error response and return
+    			response.setPayload(null);
+    			response.setStatus(false);
+    			response.setExceptionThrown(true);
+    			response.setMessage(ServiceMessages.UNSUPPORTED_OPERATION.toString());
     			
+    			String exceptionMessage = this.compileExceptionMessage(uoe);
+    			response.setExceptionMessage(exceptionMessage);
+    			logger.log(exceptionMessage);
+    			return response;
     		}
     		catch (RequestValidationException rve) {
+    			// Set error response and return
+    			response.setPayload(null);
+    			response.setStatus(false);
+    			response.setExceptionThrown(true);
+    			response.setMessage(ServiceMessages.OPERATION_FAILED.toString());
     			
+    			String exceptionMessage = this.compileExceptionMessage(rve);
+    			response.setExceptionMessage(exceptionMessage);
+    			logger.log(exceptionMessage);
+    			return response;
     		}
     		catch (PropertyRetrievalException pre) {
+    			// Set error response and return
+    			response.setPayload(null);
+    			response.setStatus(false);
+    			response.setExceptionThrown(true);
+    			response.setMessage(ServiceMessages.OPERATION_FAILED.toString());
     			
+    			String exceptionMessage = this.compileExceptionMessage(pre);
+    			response.setExceptionMessage(exceptionMessage);
+    			logger.log(exceptionMessage);
+    			return response;
     		}
     		catch (AmazonServiceException ase) {
+    			// Set error response and return
+    			response.setPayload(null);
+    			response.setStatus(false);
+    			response.setExceptionThrown(true);
+    			response.setMessage(ServiceMessages.OPERATION_FAILED.toString());
     			
+    			String exceptionMessage = this.compileExceptionMessage(ase);
+    			response.setExceptionMessage(exceptionMessage);
+    			logger.log(exceptionMessage);
+    			return response;
     		}
     		catch (AmazonClientException ace) {
+    			// Set error response and return
+    			response.setPayload(null);
+    			response.setStatus(false);
+    			response.setExceptionThrown(true);
+    			response.setMessage(ServiceMessages.OPERATION_FAILED.toString());
     			
+    			String exceptionMessage = this.compileExceptionMessage(ace);
+    			response.setExceptionMessage(exceptionMessage);
+    			logger.log(exceptionMessage);
+    			return response;
     		}
     	}
 
@@ -109,7 +163,93 @@ RequestHandler<FlagServiceRequest<Request>, FlagServiceResponse<? extends Object
     	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
     	response.setExceptionThrown(false);
     	response.setExceptionMessage(null);
+    	return response;
+    }
+    
+    /**
+     * Retrieve a ChatterFlag object from the database using
+     * flag id.
+     * 
+     * @param input the request to process
+     * @param context the request context
+     * @return FlagServiceResponse
+     * @throws RequestValidationException
+     * @throws AmazonServiceException
+     * @throws AmazonClientException
+     */
+    public FlagServiceResponse<ChatterFlag> retrieveFlag(FlagServiceRequest<Request> input,
+    		Context context) throws RequestValidationException, AmazonServiceException,
+    			AmazonClientException {
+    	FlagServiceResponse<ChatterFlag> response = new FlagServiceResponse<>();
+    	Request request = input.getData();
     	
+    	// Log request data
+    	context.getLogger().log(request.toString());
+    	
+    	ChatterFlag flag = dao.retrieveFlag(request);
+    	response.setPayload(flag);
+    	response.setStatus(true);
+    	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
+    	return response;
+    }
+    
+    /**
+     * Update an existing ChatterFlag object with new data.
+     * @param input the request to process
+     * @param context the request context
+     * @return FlagServiceResponse
+     * @throws RequestValidationException
+     * @throws AmazonServiceException
+     * @throws AmazonClientException
+     */
+    public FlagServiceResponse<ChatterFlag> updateFlag(FlagServiceRequest<Request> input, 
+    		Context context) throws RequestValidationException, AmazonServiceException,
+    			AmazonClientException {
+    	FlagServiceResponse<ChatterFlag> response = new FlagServiceResponse<>();
+    	Request request = input.getData();
+    	
+    	// Log request data
+    	context.getLogger().log(request.toString());
+    	
+    	ChatterFlag flag = dao.updateFlag(request);
+    	response.setPayload(flag);
+    	response.setStatus(true);
+    	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
+    	return response;
+    }
+    
+    /**
+     * Delete a ChatterFlag object from the database
+     * @param input the request to process
+     * @param context the request context
+     * @return FlagServiceResponse
+     * @throws RequestValidationException
+     * @throws AmazonServiceException
+     * @throws AmazonClientException
+     */
+    public FlagServiceResponse<Void> deleteFlag(FlagServiceRequest<Request> input, 
+    		Context context) throws RequestValidationException, AmazonServiceException,
+    			AmazonClientException {
+    	FlagServiceResponse<Void> response = new FlagServiceResponse<>();
+    	Request request = input.getData();
+    	
+    	// Log request data
+    	context.getLogger().log(request.toString());
+    	
+    	boolean opSuccess = dao.deleteFlag(request);
+    	response.setPayload(null);
+    	response.setStatus(true);
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
+    	
+    	if (opSuccess)
+    		response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	else
+    		response.setMessage(ServiceMessages.OPERATION_FAILED.toString());
     	return response;
     }
     
