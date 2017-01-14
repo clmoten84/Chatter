@@ -57,12 +57,17 @@ public class Request {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("***** SERVICE REQUEST DATA *****");
-		builder.append("Operation: ").append(this.operation.toString());
-		builder.append("Request Date: ").append(this.reqDate);
-		builder.append("Arguments:");
+		builder.append("\nOperation: ").append(this.operation.toString());
+		builder.append("\nRequest Date: ").append(this.reqDate);
+		builder.append("\nArguments:");
 		
-		for (String key : this.args.keySet()) {
-			builder.append("\t").append(key).append(": ").append(this.args.get(key));
+		if (this.args != null) {
+			for (String key : this.args.keySet()) {
+				builder.append("\n\t").append(key).append(": ").append(this.args.get(key));
+			}
+		}
+		else {
+			builder.append("\n\tNo arguments found in request!");
 		}
 		
 		return builder.toString();
