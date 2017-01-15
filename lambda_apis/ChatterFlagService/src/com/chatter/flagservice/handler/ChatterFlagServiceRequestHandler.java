@@ -289,8 +289,8 @@ RequestHandler<FlagServiceRequest<Request>, FlagServiceResponse<? extends Object
     private String compileExceptionMessage(Exception ex) {
     	StringBuilder builder = new StringBuilder();
     	builder.append("***** An exception was caught in service handler *****");
-    	builder.append("Exception message: ").append(ex.getMessage());
-    	builder.append("Exception details: ");
+    	builder.append("\nException message: ").append(ex.getMessage());
+    	builder.append("\nException details: ");
     	
     	for (StackTraceElement elem : ex.getStackTrace()) {
     		builder.append("\n").append(elem.toString());
