@@ -15,14 +15,15 @@ public class FlagCRUDRequest {
 
 	private ChatterFlagOps operation;
 	private Long reqDate;
-	private Map<String, String> args;
+	private Map<String, ?> args;
 	
-	public FlagCRUDRequest() { }
+	public FlagCRUDRequest() { 
+		this.reqDate = new Date().getTime();
+	}
 	
-	public FlagCRUDRequest(ChatterFlagOps operation, Long reqDate, 
-				Map<String, String> args) {
+	public FlagCRUDRequest(ChatterFlagOps operation, Map<String, ?> args) {
 		this.operation = operation;
-		this.reqDate = reqDate;
+		this.reqDate = new Date().getTime();
 		this.args = args;
 	}
 
@@ -42,11 +43,11 @@ public class FlagCRUDRequest {
 		this.reqDate = reqDate;
 	}
 
-	public Map<String, String> getArgs() {
+	public Map<String, ?> getArgs() {
 		return args;
 	}
 
-	public void setArgs(Map<String, String> args) {
+	public void setArgs(Map<String, ?> args) {
 		this.args = args;
 	}
 	

@@ -15,14 +15,15 @@ public class ForumCRUDRequest {
 
 	private ChatterForumOps operation;
 	private Long reqDate;
-	private Map<String, String> args;
+	private Map<String, ?> args;
 	
-	public ForumCRUDRequest() { }
+	public ForumCRUDRequest() { 
+		this.reqDate = new Date().getTime();
+	}
 	
-	public ForumCRUDRequest(ChatterForumOps operation, Long reqDate, 
-			Map<String, String> args) {
+	public ForumCRUDRequest(ChatterForumOps operation, Map<String, ?> args) {
 		this.operation = operation;
-		this.reqDate = reqDate;
+		this.reqDate = new Date().getTime();
 		this.args = args;
 	}
 
@@ -42,11 +43,11 @@ public class ForumCRUDRequest {
 		this.reqDate = reqDate;
 	}
 
-	public Map<String, String> getArgs() {
+	public Map<String, ?> getArgs() {
 		return args;
 	}
 
-	public void setArgs(Map<String, String> args) {
+	public void setArgs(Map<String, ?> args) {
 		this.args = args;
 	}
 	

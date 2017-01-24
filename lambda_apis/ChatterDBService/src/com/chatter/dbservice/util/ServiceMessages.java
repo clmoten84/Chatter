@@ -13,7 +13,8 @@ public enum ServiceMessages {
 	UNSUPPORTED_OPERATION("Service received a request for an operation that is not"
 			+ " supported by this service."),
 	MISSING_OPERATION("Service received a request that is missing the required"
-			+ " operation attribute and value.");
+			+ " operation attribute and value."),
+	INVALID_REQUEST("Service received an invalid request!");
 
 	private final String message;
 	

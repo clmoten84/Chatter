@@ -17,12 +17,13 @@ public class CommentCRUDRequest {
 	private Long reqDate;
 	private Map<String, String> args;
 	
-	public CommentCRUDRequest() { }
+	public CommentCRUDRequest() { 
+		this.reqDate = new Date().getTime();
+	}
 	
-	public CommentCRUDRequest(ChatterCommentOps operation, Long reqDate, 
-			Map<String, String> args) {
+	public CommentCRUDRequest(ChatterCommentOps operation, Map<String, String> args) {
 		this.operation = operation;
-		this.reqDate = reqDate;
+		this.reqDate = new Date().getTime();
 		this.args = args;
 	}
 
