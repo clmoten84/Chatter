@@ -8,5 +8,6 @@ package com.chatter.dbservice.util.ops;
  * ChatterComment data.
  */
 public enum ChatterCommentOps {
-
+	CREATE, RETRIEVE, UPDATE, DELETE, QUERY_BY_CREATOR,
+	QUERY_BY_FORUM, BATCH_RETRIEVE, BATCH_DELETE
 }

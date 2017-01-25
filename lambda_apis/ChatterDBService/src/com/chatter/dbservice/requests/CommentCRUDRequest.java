@@ -15,13 +15,13 @@ public class CommentCRUDRequest {
 
 	private ChatterCommentOps operation;
 	private Long reqDate;
-	private Map<String, String> args;
+	private Map<String, ?> args;
 	
 	public CommentCRUDRequest() { 
 		this.reqDate = new Date().getTime();
 	}
 	
-	public CommentCRUDRequest(ChatterCommentOps operation, Map<String, String> args) {
+	public CommentCRUDRequest(ChatterCommentOps operation, Map<String, ?> args) {
 		this.operation = operation;
 		this.reqDate = new Date().getTime();
 		this.args = args;
@@ -43,7 +43,7 @@ public class CommentCRUDRequest {
 		this.reqDate = reqDate;
 	}
 
-	public Map<String, String> getArgs() {
+	public Map<String, ?> getArgs() {
 		return args;
 	}
 
