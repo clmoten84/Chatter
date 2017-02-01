@@ -10,6 +10,7 @@ import com.chatter.dbservice.dao.impl.ForumDAOImpl;
 import com.chatter.dbservice.exceptions.MissingOperationException;
 import com.chatter.dbservice.exceptions.PropertyRetrievalException;
 import com.chatter.dbservice.exceptions.RequestValidationException;
+import com.chatter.dbservice.exceptions.UnsupportedOperationException;
 import com.chatter.dbservice.requests.ForumCRUDRequest;
 import com.chatter.dbservice.responses.ServiceResponse;
 import com.chatter.dbservice.util.ops.ChatterForumOps;
@@ -62,12 +63,12 @@ public class ChatterForumDBRequestHandler implements
 					case PING:
 						return this.pingService(input, context);
 					default:
-						throw new UnsupportedOperationException("ERROR: the service "
-								+ "does not support operation: " + op.toString());
+						throw new UnsupportedOperationException("ERROR: Chatter Forum data "
+								+ "request contains unsupported operation: " + op.toString());
     				}
     			}
     			else {
-    				throw new MissingOperationException("ERROR: the incoming request "
+    				throw new MissingOperationException("ERROR: Chatter Forum data request "
     						+ "is missing a required operation attribute!");
     			}
     		}

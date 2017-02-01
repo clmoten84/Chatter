@@ -12,6 +12,7 @@ import com.chatter.dbservice.dao.impl.FlagDAOImpl;
 import com.chatter.dbservice.exceptions.MissingOperationException;
 import com.chatter.dbservice.exceptions.PropertyRetrievalException;
 import com.chatter.dbservice.exceptions.RequestValidationException;
+import com.chatter.dbservice.exceptions.UnsupportedOperationException;
 import com.chatter.dbservice.requests.FlagCRUDRequest;
 import com.chatter.dbservice.responses.ServiceResponse;
 import com.chatter.dbservice.util.ServiceMessages;
@@ -62,12 +63,12 @@ public class ChatterFlagDBRequestHandler implements
     				case PING:
     					return this.pingService(input, context);
     				default:
-    					throw new UnsupportedOperationException("ERROR: the service "
-    							+ "does not support operation: " + op.toString());
+    					throw new UnsupportedOperationException("ERROR: Chatter Flag data "
+    							+ "request contains unsupported operation: " + op.toString());
     				}
     			}
     			else {
-    				throw new MissingOperationException("ERROR: the incoming request "
+    				throw new MissingOperationException("ERROR: Chatter Flag data request "
     						+ "is missing a required operation attribute!");
     			}
     		}

@@ -9,6 +9,7 @@ import com.chatter.dbservice.exceptions.RequestValidationException;
 import com.chatter.dbservice.model.ChatterComment;
 import com.chatter.dbservice.requests.CommentCRUDRequest;
 import com.chatter.dbservice.responses.CommentResultPage;
+import com.chatter.dbservice.responses.ServicePropsResponse;
 
 /**
  * CommentDAO
@@ -45,20 +46,6 @@ public interface CommentDAO {
 	public ChatterComment retrieveComment(CommentCRUDRequest request) throws
 		AmazonServiceException, AmazonClientException,
 			RequestValidationException;
-	
-	/**
-	 * Update an existing ChatterComment object in the database
-	 * with new values.
-	 * 
-	 * @param request the request to process
-	 * @return updated ChatterComment object
-	 * @throws AmazonServiceException
-	 * @throws AmazonClientException
-	 * @throws RequestValidationException
-	 */
-	public ChatterComment updateComment(CommentCRUDRequest request) throws
-	AmazonServiceException, AmazonClientException,
-		RequestValidationException;
 	
 	/**
 	 * Delete an existing ChatterComment object from the database.
@@ -127,4 +114,26 @@ public interface CommentDAO {
 	public List<String> batchDelete(CommentCRUDRequest request) throws
 		AmazonServiceException, AmazonClientException,
 			RequestValidationException;
+	
+	/**
+	 * Updates an existing ChatterComment object in database
+	 * 
+	 * @param request the request to process
+	 * @return
+	 * @throws AmazonServiceException
+	 * @throws AmazonClientException
+	 * @throws RequestValidationException
+	 */
+	public ChatterComment updateComment(CommentCRUDRequest request) throws
+		AmazonServiceException, AmazonClientException,
+			RequestValidationException;
+	
+	/**
+	 * Gathers data about this service and returns it in an object
+	 * wrapper.
+	 * 
+	 * @return ServicePropsResponse
+	 * @throws PropertyRetrievalException 
+	 */
+	public ServicePropsResponse getServiceProperties() throws PropertyRetrievalException;
 }
