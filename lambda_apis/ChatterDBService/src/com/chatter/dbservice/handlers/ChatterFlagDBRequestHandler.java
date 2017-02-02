@@ -113,7 +113,7 @@ public class ChatterFlagDBRequestHandler implements
     			response.setPayload(null);
     			response.setStatus(false);
     			response.setExceptionThrown(true);
-    			response.setMessage(ServiceMessages.OPERATION_FAILURE.toString());
+    			response.setMessage(ServiceMessages.PROPERTY_RETRIEVAL_FAILURE.toString());
     			
     			String exceptionMessage = this.compileExceptionMessage(pre);
     			response.setExceptionMessage(exceptionMessage);
@@ -347,7 +347,7 @@ public class ChatterFlagDBRequestHandler implements
     	builder.append("\nException details: ");
     	
     	for (StackTraceElement elem : ex.getStackTrace()) {
-    		builder.append("\n").append(elem.toString());
+    		builder.append("\n\t").append(elem.toString());
     	}
     	
     	return builder.toString();

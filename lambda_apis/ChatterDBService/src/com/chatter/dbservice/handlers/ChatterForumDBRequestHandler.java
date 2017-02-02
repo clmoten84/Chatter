@@ -112,7 +112,7 @@ public class ChatterForumDBRequestHandler implements
     			// Set error response and return
         		response.setPayload(null);
         		response.setStatus(false);
-        		response.setMessage(ServiceMessages.OPERATION_FAILURE.toString());
+        		response.setMessage(ServiceMessages.PROPERTY_RETRIEVAL_FAILURE.toString());
         		response.setExceptionThrown(true);
         		
         		String exceptionMessage = this.compileExceptionMessage(pre);
@@ -424,11 +424,11 @@ public class ChatterForumDBRequestHandler implements
     private String compileExceptionMessage(Exception ex) {
     	StringBuilder builder = new StringBuilder();
     	builder.append("***** An Exception was caught in service handler *****");
-    	builder.append("Exception message: ").append(ex.getMessage());
-    	builder.append("Exception Details: ");
+    	builder.append("\nException message: ").append(ex.getMessage());
+    	builder.append("\nException Details: ");
     	
     	for(StackTraceElement element : ex.getStackTrace()) {
-    		builder.append("\n").append(element.toString());
+    		builder.append("\n\t").append(element.toString());
     	}
     	return builder.toString();
     }

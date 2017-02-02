@@ -14,7 +14,8 @@ public enum ServiceMessages {
 			+ " supported by this service."),
 	MISSING_OPERATION("Service received a request that is missing the required"
 			+ " operation attribute and value."),
-	INVALID_REQUEST("Service received an invalid request!");
+	INVALID_REQUEST("Service received an invalid request!"),
+	PROPERTY_RETRIEVAL_FAILURE("Service failed to retrieve a required property value!");
 
 	private final String message;
 	
