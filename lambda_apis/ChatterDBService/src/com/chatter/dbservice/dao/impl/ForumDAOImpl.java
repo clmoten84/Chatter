@@ -289,7 +289,7 @@ public class ForumDAOImpl implements ForumDAO{
 			attVal.setS(exclusiveStartVal);
 			
 			exclusiveStartKey = new HashMap<>();
-			exclusiveStartKey.put("forumId", attVal);
+			exclusiveStartKey.put("forum_id", attVal);
 		}
 		
 		ChatterForum forum = new ChatterForum();
