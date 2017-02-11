@@ -1,6 +1,6 @@
 package com.chatter.dbservice.requests.validators;
 
-import java.util.Set;
+import java.util.List;
 
 import com.chatter.dbservice.exceptions.RequestValidationException;
 import com.chatter.dbservice.requests.FlagCRUDRequest;
@@ -111,7 +111,7 @@ public class FlagCRUDRequestValidator {
 		if (req != null) {
 			if (req.getArgs() != null) {
 				try {
-					Set<String> flagIds = (Set<String>) req.getArgs().get("flagIds");
+					List<String> flagIds = (List<String>) req.getArgs().get("flagIds");
 					
 					if (flagIds == null || flagIds.isEmpty())
 						validReq = false;

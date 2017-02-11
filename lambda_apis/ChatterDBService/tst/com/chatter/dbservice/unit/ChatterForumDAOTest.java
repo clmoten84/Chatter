@@ -60,7 +60,7 @@ public class ChatterForumDAOTest {
 	private ChatterForum createTestForum() {
 		ChatterForum forum = new ChatterForum();
 		forum.setTitle("Just a Test Forum");
-		forum.setCreatedBy("Conde Nast");
+		forum.setCreatedBy("dbservice");
 		forum.setTimeStamp(new Date().getTime());
 		return forum;
 	}
@@ -74,7 +74,7 @@ public class ChatterForumDAOTest {
 		for(int i = 0; i < 40; i++) {
 			ChatterForum forum = new ChatterForum();
 			forum.setTitle("Test Forum #" + i);
-			forum.setCreatedBy("cmoten");
+			forum.setCreatedBy("dbservice");
 			forum.setTimeStamp(new Date().getTime());
 			forums.add(forum);
 		}
@@ -288,7 +288,7 @@ public class ChatterForumDAOTest {
 			Assert.assertNotNull(forum.getForumId());
 			Assert.assertNull(forum.getCommentIds());
 			Assert.assertEquals("Just a Test Forum, actual", forum.getTitle());
-			Assert.assertEquals("Conde Nast", forum.getCreatedBy());
+			Assert.assertEquals("dbservice", forum.getCreatedBy());
 			
 			// Delete created ChatterForum object from DB
 			boolean deleteSucceeded = dao.deleteForum(this.generateDeleteArgs(
@@ -420,7 +420,7 @@ public class ChatterForumDAOTest {
 			
 			// Attempt to query the ChatterForum table by created_by
 			ForumResultPage results = dao.queryByCreator(this.generateQueryByCreatorArgs(
-					"cmoten", null));
+					"dbservice", null));
 			Assert.assertNotNull(results);
 			Assert.assertNotNull(results.getPageResults());
 			Assert.assertTrue(results.getPageResults().size() == 30);
@@ -432,7 +432,7 @@ public class ChatterForumDAOTest {
 			// Attempt to retrieve the remaining ChatterForums from query
 			// Should only be 10 records left to retrieve.
 			ForumResultPage remResults = dao.queryByCreator(this.generateQueryByCreatorArgs(
-					"cmoten", results.getLastEvaluatedKey().get("forum_id").getS()));
+					"dbservice", results.getLastEvaluatedKey().get("forum_id").getS()));
 			Assert.assertNotNull(remResults);
 			Assert.assertNotNull(remResults.getPageResults());
 			Assert.assertTrue(remResults.getPageResults().size() == 10);

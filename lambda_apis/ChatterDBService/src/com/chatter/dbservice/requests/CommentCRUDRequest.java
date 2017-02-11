@@ -47,7 +47,7 @@ public class CommentCRUDRequest {
 		return args;
 	}
 
-	public void setArgs(Map<String, String> args) {
+	public void setArgs(Map<String, ?> args) {
 		this.args = args;
 	}
 	
