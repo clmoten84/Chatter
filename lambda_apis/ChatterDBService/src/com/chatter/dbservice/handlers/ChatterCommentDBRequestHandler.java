@@ -163,7 +163,7 @@ public class ChatterCommentDBRequestHandler implements
      */
     public ServiceResponse<ChatterComment> createComment(CommentCRUDRequest request,
     		Context context) throws RequestValidationException, AmazonServiceException,
-    			AmazonClientException {
+    			AmazonClientException, PropertyRetrievalException {
     	
     	ServiceResponse<ChatterComment> response = new ServiceResponse<>();
     	

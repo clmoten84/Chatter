@@ -128,7 +128,8 @@ public class ChatterForumDAOTest {
 	 * @param createdBy
 	 * @return
 	 */
-	private ForumCRUDRequest generateQueryByCreatorArgs(String createdBy, String startKey) {
+	private ForumCRUDRequest generateQueryByCreatorArgs(String createdBy, 
+				String startId, String startCreator, String startTimeStamp) {
 		ForumCRUDRequest request = new ForumCRUDRequest();
 		request.setOperation(ChatterForumOps.QUERY_BY_CREATOR);
 		request.setReqDate(new Date().getTime());
@@ -137,8 +138,14 @@ public class ChatterForumDAOTest {
 		Map<String, String> args = new HashMap<>();
 		args.put("createdBy", createdBy);
 		
-		if (startKey != null && !startKey.isEmpty()) 
-			args.put("exclusiveStartVal", startKey);
+		if (startId != null && !startId.isEmpty()) 
+			args.put("exclusiveStartId", startId);
+		
+		if (startCreator != null && !startCreator.isEmpty())
+			args.put("exclusiveStartCreator", startCreator);
+		
+		if (startTimeStamp != null && !startTimeStamp.isEmpty())
+			args.put("exclusiveStartTimeStamp", startTimeStamp);
 		
 		// Set date conditions to be from two weeks ago to right now
 		final long DAYS_IN_MS = 1000 * 60 * 60 *24;
@@ -287,7 +294,7 @@ public class ChatterForumDAOTest {
 			Assert.assertNotNull(forum);
 			Assert.assertNotNull(forum.getForumId());
 			Assert.assertNull(forum.getCommentIds());
-			Assert.assertEquals("Just a Test Forum, actual", forum.getTitle());
+			Assert.assertEquals("Just a Test Forum", forum.getTitle());
 			Assert.assertEquals("dbservice", forum.getCreatedBy());
 			
 			// Delete created ChatterForum object from DB
@@ -420,7 +427,7 @@ public class ChatterForumDAOTest {
 			
 			// Attempt to query the ChatterForum table by created_by
 			ForumResultPage results = dao.queryByCreator(this.generateQueryByCreatorArgs(
-					"dbservice", null));
+					"dbservice", null, null, null));
 			Assert.assertNotNull(results);
 			Assert.assertNotNull(results.getPageResults());
 			Assert.assertTrue(results.getPageResults().size() == 30);
@@ -428,15 +435,20 @@ public class ChatterForumDAOTest {
 			Assert.assertNotNull(results.getLastEvaluatedKey());
 			Assert.assertTrue(results.isMoreResults());
 			Assert.assertNotNull(results.getLastEvaluatedKey().get("forum_id"));
+			Assert.assertNotNull(results.getLastEvaluatedKey().get("created_by"));
+			Assert.assertNotNull(results.getLastEvaluatedKey().get("time_stamp"));
 			
 			// Attempt to retrieve the remaining ChatterForums from query
 			// Should only be 10 records left to retrieve.
+			String lastEvalId = results.getLastEvaluatedKey().get("forum_id").getS();
+			String lastEvalCreator = results.getLastEvaluatedKey().get("created_by").getS();
+			String lastEvalTS = results.getLastEvaluatedKey().get("time_stamp").getN();
 			ForumResultPage remResults = dao.queryByCreator(this.generateQueryByCreatorArgs(
-					"dbservice", results.getLastEvaluatedKey().get("forum_id").getS()));
+					"dbservice", lastEvalId, lastEvalCreator, lastEvalTS));
 			Assert.assertNotNull(remResults);
 			Assert.assertNotNull(remResults.getPageResults());
-			Assert.assertTrue(remResults.getPageResults().size() == 10);
-			Assert.assertTrue(remResults.getResultCount() == 10);
+			Assert.assertTrue(remResults.getPageResults().size() >= 10);
+			Assert.assertTrue(remResults.getResultCount() >= 10);
 			Assert.assertNull(remResults.getLastEvaluatedKey());
 			Assert.assertFalse(remResults.isMoreResults());
 			
@@ -444,21 +456,17 @@ public class ChatterForumDAOTest {
 			for (String forumId : forumIds) {
 				boolean deleteSucceeded = dao.deleteForum(this.generateDeleteArgs(
 						forumId));
-				
-				if (!deleteSucceeded)
-					System.out.println(String.format("Failed to delete forum: %s during "
-							+ "clean up of testQueryByCreator()", 
-							forumId));
+				Assert.assertTrue(deleteSucceeded);
 			}
 		}
 		catch (PropertyRetrievalException pre) {
-			System.out.println("Failed to retrieve a required service property!");
+			pre.printStackTrace();
 		}
 		catch (RequestValidationException rve) {
-			System.out.println("Erroneous arguments to DAO method!");
+			rve.printStackTrace();
 		}
 		catch (AmazonClientException ace) {
-			System.out.println("Something bad happend on AWS side!");
+			ace.printStackTrace();
 		}
 	}
 	

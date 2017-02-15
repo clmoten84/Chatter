@@ -2,6 +2,7 @@ package com.chatter.dbservice.dao.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -9,6 +10,7 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.datamodeling.KeyPair;
 import com.chatter.dbservice.dao.FlagDAO;
 import com.chatter.dbservice.exceptions.PropertyRetrievalException;
 import com.chatter.dbservice.exceptions.RequestValidationException;
@@ -183,9 +185,13 @@ public class FlagDAOImpl implements FlagDAO{
 		// Initialize list of results
 		List<ChatterFlag> flagResults = null;
 		
-		// Attempt to retrieve Chatter Flag objects from database
+		// Create arguments for batch load function
 		List<String> flagIds = (List<String>) req.getArgs().get("flagIds");
-		Map<String, List<Object>> flagData = dbMapper.batchLoad(flagIds);
+		Map<Class<?>, List<KeyPair>> primaryKeyMap = new HashMap<>();
+		primaryKeyMap.put(ChatterFlag.class, this.generateHashKeyPairList(flagIds));
+		
+		// Attempt to retrieve Chatter Flag objects from database
+		Map<String, List<Object>> flagData = dbMapper.batchLoad(primaryKeyMap);
 		
 		if (flagData != null) {
 			// Need to cast object to ChatterFlag and add to 
@@ -222,9 +228,13 @@ public class FlagDAOImpl implements FlagDAO{
 		List<String> resultFlagIds = null;
 		List<ChatterFlag> flagResults = null;
 		
-		// Attempt to retrieve Chatter Flag objects from database
+		// Create batch load arguments
 		List<String> flagIds = (List<String>) req.getArgs().get("flagIds");
-		Map<String, List<Object>> flagData = dbMapper.batchLoad(flagIds);
+		Map<Class<?>, List<KeyPair>> primaryKeyMap = new HashMap<>();
+		primaryKeyMap.put(ChatterFlag.class, this.generateHashKeyPairList(flagIds));
+		
+		// Attempt to retrieve Chatter Flag objects from database
+		Map<String, List<Object>> flagData = dbMapper.batchLoad(primaryKeyMap);
 		
 		if (flagData != null) {
 			// Need to cast object to ChatterFlag and add to 
@@ -258,5 +268,20 @@ public class FlagDAOImpl implements FlagDAO{
 				this.propsResolver.getProperty("service.name"),
 				this.propsResolver.getProperty("service.description"),
 				this.propsResolver.getProperty("service.version"));
+	}
+	
+	/**
+	 * Generate a list of key pairs from the argument list of
+	 * hash keys.
+	 * @param hashKeys
+	 * @return
+	 */
+	private List<KeyPair> generateHashKeyPairList(List<String> hashKeys) {
+		List<KeyPair> keyPairs = new ArrayList<>();
+		for (String hashKey : hashKeys) {
+			keyPairs.add(new KeyPair().withHashKey(hashKey));
+		}
+		
+		return keyPairs;
 	}
 }

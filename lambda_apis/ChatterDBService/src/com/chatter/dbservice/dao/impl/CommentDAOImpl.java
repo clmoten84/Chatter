@@ -10,11 +10,15 @@ import java.util.Set;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
+import com.amazonaws.services.dynamodbv2.datamodeling.KeyPair;
 import com.amazonaws.services.dynamodbv2.datamodeling.QueryResultPage;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
+import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.chatter.dbservice.dao.CommentDAO;
 import com.chatter.dbservice.exceptions.PropertyRetrievalException;
 import com.chatter.dbservice.exceptions.RequestValidationException;
@@ -40,15 +44,24 @@ public class CommentDAOImpl implements CommentDAO{
 	private DynamoDBMapper dbMapper;
 	
 	public CommentDAOImpl() throws PropertyRetrievalException {
-		// Create DynamoDB client
-		dbClient = new AmazonDynamoDBClient();
+		// Initialize properties resolver instance
+		this.propsResolver = new PropertiesResolver("service.properties");
 		
-		// Set DB endpoint
-		propsResolver = new PropertiesResolver("service.properties");
-		dbClient.setEndpoint(propsResolver.getProperty("aws.dynamodb.endpoint"));
-		
-		// Create DB mapper
-		dbMapper = new DynamoDBMapper(dbClient);
+		// Initialize DynamoDB client instance
+		// If the execution environment is local use the 
+		// ProfileCredentialsProvider so that the client can
+		// find AWS credentials in the local environment. Otherwise
+		// use the default provider chain.
+		if (this.propsResolver.getProperty("service.env").equalsIgnoreCase("local")) {
+			this.dbClient = new AmazonDynamoDBClient(new ProfileCredentialsProvider());
+			this.dbClient.setEndpoint(propsResolver.getProperty("aws.dynamodb.endpoint"));
+			this.dbMapper = new DynamoDBMapper(dbClient, new ProfileCredentialsProvider());
+		}
+		else {
+			this.dbClient = new AmazonDynamoDBClient();
+			this.dbClient.setEndpoint(propsResolver.getProperty("aws.dynamodb.endpoint"));
+			this.dbMapper = new DynamoDBMapper(dbClient);
+		}
 	}
 
 	/**
@@ -57,7 +70,7 @@ public class CommentDAOImpl implements CommentDAO{
 	@Override
 	public ChatterComment createComment(CommentCRUDRequest request)
 			throws AmazonServiceException, AmazonClientException,
-			RequestValidationException {
+			RequestValidationException, PropertyRetrievalException {
 		
 		// Validate incoming request
 		CommentCRUDRequestValidator.validateCreateRequest(request);
@@ -138,20 +151,44 @@ public class CommentDAOImpl implements CommentDAO{
 		CommentResultPage commentResultPage = null;
 		QueryResultPage<ChatterComment> resultPage = null;
 		Map<String, AttributeValue> exclusiveStartKey = null;
+		Condition sortKeyCond = null;
 		
 		String createdBy = (String) request.getArgs().get("createdBy");
-		//Long timeStampFrom = (Long) request.getArgs().get("timeStampFrom");
-		//Long timeStampTo = (Long) request.getArgs().get("timeStampTo");
-		String exclusiveStartVal = (String) request.getArgs().get("exclusiveStartVal");
+		String timeStampFrom = (String) request.getArgs().get("timeStampFrom");
+		String timeStampTo = (String) request.getArgs().get("timeStampTo");
+		String exclusiveStartId = (String) request.getArgs().get("exclusiveStartId");
+		String exclusiveStartCreator = (String) request.getArgs().get("exclusiveStartCreator");
+		String exclusiveStartTS = (String) request.getArgs().get("exclusiveStartTS");
 		
 		// Check to see if an exclusive start value was included in request
-		if (exclusiveStartVal != null && !exclusiveStartVal.isEmpty()) {
-			// Need to generate an AttributeValue and exclusive start key
-			AttributeValue attVal = new AttributeValue();
-			attVal.setS(exclusiveStartVal);
+		if (exclusiveStartId != null && !exclusiveStartId.isEmpty()
+				&& exclusiveStartCreator != null && !exclusiveStartCreator.isEmpty()
+				&& exclusiveStartTS != null && !exclusiveStartTS.isEmpty()) {
+			
+			// ID AttributeValue
+			AttributeValue idAttVal = new AttributeValue();
+			idAttVal.setS(exclusiveStartId);
+			
+			// Created by AttributeValue
+			AttributeValue creatorAttVal = new AttributeValue();
+			creatorAttVal.setS(exclusiveStartCreator);
+			
+			// Time stamp AttributeValue
+			AttributeValue tsAttVal = new AttributeValue();
+			tsAttVal.setN(exclusiveStartTS);
 			
 			exclusiveStartKey = new HashMap<>();
-			exclusiveStartKey.put("comment_id", attVal);
+			exclusiveStartKey.put("comment_id", idAttVal);
+			exclusiveStartKey.put("created_by", creatorAttVal);
+			exclusiveStartKey.put("time_stamp", tsAttVal);
+		}	
+		
+		// Check to see if sort key values were included in request
+		if (timeStampFrom != null && timeStampTo != null) {
+			sortKeyCond = new Condition()
+				.withComparisonOperator(ComparisonOperator.BETWEEN.toString())
+				.withAttributeValueList(new AttributeValue().withN(timeStampFrom), 
+						new AttributeValue().withN(timeStampTo));
 		}
 		
 		ChatterComment comment = new ChatterComment();
@@ -164,7 +201,12 @@ public class CommentDAOImpl implements CommentDAO{
 		query.setLimit(Integer.parseInt(propsResolver.getProperty("queryLimit")));
 		query.setConsistentRead(false);
 		
-		// TODO: Need to set global index range key condition here
+		// Set index range key if applicable
+		if (sortKeyCond != null) {
+			Map<String, Condition> cond = new HashMap<>();
+			cond.put("time_stamp", sortKeyCond);
+			query.setRangeKeyConditions(cond);
+		}
 		
 		// Set exclusive start key
 		if (exclusiveStartKey != null) {
@@ -201,16 +243,24 @@ public class CommentDAOImpl implements CommentDAO{
 		Map<String, AttributeValue> exclusiveStartKey = null;
 		
 		String forumId = (String) request.getArgs().get("forumId");
-		String exclusiveStartVal = (String) request.getArgs().get("exclusiveStartVal");
+		String exclusiveStartId = (String) request.getArgs().get("exclusiveStartId");
+		String exclusiveStartForum = (String) request.getArgs().get("exclusiveStartForum");
 		
 		// Check to see if an exclusive start value was included in request
-		if (exclusiveStartVal != null && !exclusiveStartVal.isEmpty()) {
-			// Need to generate an AttributeValue and exclusive start key
-			AttributeValue attVal = new AttributeValue();
-			attVal.setS(exclusiveStartVal);
+		if (exclusiveStartId != null && !exclusiveStartId.isEmpty()
+				&& exclusiveStartForum != null && !exclusiveStartForum.isEmpty()) {
+			
+			// ID AttributeValue
+			AttributeValue idAttVal = new AttributeValue();
+			idAttVal.setS(exclusiveStartId);
+			
+			// Forum ID AttributeValue
+			AttributeValue forumAttVal = new AttributeValue();
+			forumAttVal.setS(exclusiveStartForum);
 			
 			exclusiveStartKey = new HashMap<>();
-			exclusiveStartKey.put("comment_id", attVal);
+			exclusiveStartKey.put("comment_id", idAttVal);
+			exclusiveStartKey.put("forum_id", forumAttVal);
 		}
 		
 		ChatterComment comment = new ChatterComment();
@@ -257,9 +307,13 @@ public class CommentDAOImpl implements CommentDAO{
 		// Initialize result list
 		List<ChatterComment> commentResults = null;
 		
-		// Attempt to retrieve list of comment objects from database
+		// Create arguments for batch load
 		List<String> commentIds = (List<String>) request.getArgs().get("commentIds");
-		Map<String, List<Object>> commentData = dbMapper.batchLoad(commentIds);
+		Map<Class<?>, List<KeyPair>> primaryKeyMap = new HashMap<>();
+		primaryKeyMap.put(ChatterComment.class, this.generateHashKeyPairList(commentIds));
+		
+		// Attempt to retrieve list of comment objects from database
+		Map<String, List<Object>> commentData = dbMapper.batchLoad(primaryKeyMap);
 		
 		if (commentData != null) {
 			// Need to cast object to ChatterComment and add
@@ -292,9 +346,13 @@ public class CommentDAOImpl implements CommentDAO{
 		List<ChatterComment> commentResults = null;
 		List<String> resultCommentIds = null;
 		
-		// Attempt to retrieve list of comment objects from database
+		// Create arguments for batch load
 		List<String> commentIds = (List<String>) request.getArgs().get("commentIds");
-		Map<String, List<Object>> commentData = dbMapper.batchLoad(commentIds);
+		Map<Class<?>, List<KeyPair>> primaryKeyMap = new HashMap<>();
+		primaryKeyMap.put(ChatterComment.class, this.generateHashKeyPairList(commentIds));
+		
+		// Attempt to retrieve list of comment objects from database
+		Map<String, List<Object>> commentData = dbMapper.batchLoad(primaryKeyMap);
 		
 		if (commentData != null) {
 			// Need to cast object to ChatterComment and add
@@ -472,7 +530,7 @@ public class CommentDAOImpl implements CommentDAO{
 				flagIds = new HashSet<>();
 			}
 			
-			if (flagIds.add((String) reqArgs.get("replyId"))) {
+			if (flagIds.add((String) reqArgs.get("flagId"))) {
 				comment.setFlagIds(flagIds);
 				this.dbMapper.save(comment);
 			}
@@ -530,5 +588,19 @@ public class CommentDAOImpl implements CommentDAO{
 			this.dbMapper.save(comment);
 		}
 		return comment;
+	}
+	
+	/**
+	 * Generate a list of KeyPairs from the argument list of
+	 * hash keys.
+	 * @param hashKeys
+	 * @return
+	 */
+	private List<KeyPair> generateHashKeyPairList(List<String> hashKeys) {
+		List<KeyPair> keyPairs = new ArrayList<>();
+		for (String hashKey : hashKeys) {
+			keyPairs.add(new KeyPair().withHashKey(hashKey));
+		}
+		return keyPairs;
 	}
 }

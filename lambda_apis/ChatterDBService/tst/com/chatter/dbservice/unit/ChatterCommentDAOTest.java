@@ -105,8 +105,8 @@ public class ChatterCommentDAOTest {
 		Map<String, String> args = new HashMap<>();
 		args.put("createdBy", commentIn.getCreatedBy());
 		args.put("forumId", commentIn.getForumId());
-		args.put("bucketName", "some_bucket");
-		args.put("fileName", "some_file");
+		args.put("bucketName", "dbservice-test-bucket");
+		args.put("fileName", "test_file.mp4");
 		request.setArgs(args);
 		
 		return request;
@@ -229,7 +229,8 @@ public class ChatterCommentDAOTest {
 	 * @param createdBy
 	 * @return
 	 */
-	private CommentCRUDRequest generateQueryByCreatorArgs(String createdBy, String startKey) {
+	private CommentCRUDRequest generateQueryByCreatorArgs(String createdBy, String startId,
+			String startCreator, String startTS) {
 		CommentCRUDRequest request = new CommentCRUDRequest();
 		request.setOperation(ChatterCommentOps.QUERY_BY_CREATOR);
 		request.setReqDate(new Date().getTime());
@@ -238,8 +239,14 @@ public class ChatterCommentDAOTest {
 		Map<String, String> args = new HashMap<>();
 		args.put("createdBy", createdBy);
 		
-		if (startKey != null && !startKey.isEmpty())
-			args.put("exclusiveStartVal", startKey);
+		if (startId != null && !startId.isEmpty())
+			args.put("exclusiveStartId", startId);
+		
+		if (startCreator != null && !startCreator.isEmpty())
+			args.put("exclusiveStartCreator", startCreator);
+		
+		if (startTS != null && !startTS.isEmpty())
+			args.put("exclusiveStartTS", startTS);
 		
 		// Set date conditions to be from two weeks ago to right now
 		final long DAYS_IN_MS = 1000 * 60 * 60 *24;
@@ -258,7 +265,8 @@ public class ChatterCommentDAOTest {
 	 * @param forumId
 	 * @return
 	 */
-	private CommentCRUDRequest generateQueryByForumArgs(String forumId, String startKey) {
+	private CommentCRUDRequest generateQueryByForumArgs(String forumId, String startId,
+			String startForum) {
 		CommentCRUDRequest request = new CommentCRUDRequest();
 		request.setOperation(ChatterCommentOps.QUERY_BY_FORUM);
 		request.setReqDate(new Date().getTime());
@@ -267,8 +275,11 @@ public class ChatterCommentDAOTest {
 		Map<String, String> args = new HashMap<>();
 		args.put("forumId", forumId);
 		
-		if (startKey != null && !startKey.isEmpty())
-			args.put("exclusiveStartVal", startKey);
+		if (startId != null && !startId.isEmpty())
+			args.put("exclusiveStartId", startId);
+		
+		if (startForum != null && !startForum.isEmpty())
+			args.put("exclusiveStartForum", startForum);
 		request.setArgs(args);
 		
 		return request;
@@ -321,6 +332,9 @@ public class ChatterCommentDAOTest {
 		catch (RequestValidationException rve) {
 			rve.printStackTrace();
 		}
+		catch (PropertyRetrievalException pre) {
+			pre.printStackTrace();
+		}
 		catch (AmazonClientException ace) {
 			ace.printStackTrace();
 		}
@@ -354,6 +368,9 @@ public class ChatterCommentDAOTest {
 		}
 		catch (RequestValidationException rve) {
 			rve.printStackTrace();
+		}
+		catch (PropertyRetrievalException pre) {
+			pre.printStackTrace();
 		}
 		catch (AmazonClientException ace) {
 			ace.printStackTrace();
@@ -412,6 +429,9 @@ public class ChatterCommentDAOTest {
 		catch (RequestValidationException rve) {
 			rve.printStackTrace();
 		}
+		catch (PropertyRetrievalException pre) {
+			pre.printStackTrace();
+		}
 		catch (AmazonClientException ace) {
 			ace.printStackTrace();
 		}
@@ -439,10 +459,11 @@ public class ChatterCommentDAOTest {
 				Assert.assertFalse(comment.getCommentId().isEmpty());
 				commentIds.add(comment.getCommentId());
 			}
+			Assert.assertEquals(40, commentIds.size());
 			
 			// Attempt to query ChatterComment table
 			CommentResultPage resultPage = dao.queryByCreator(
-					this.generateQueryByCreatorArgs("dbservice", null));
+					this.generateQueryByCreatorArgs("dbservice", null, null, null));
 			Assert.assertNotNull(resultPage);
 			Assert.assertNotNull(resultPage.getPageResults());
 			Assert.assertTrue(resultPage.getPageResults().size() == 30);
@@ -450,12 +471,18 @@ public class ChatterCommentDAOTest {
 			Assert.assertNotNull(resultPage.getLastEvaluatedKey());
 			Assert.assertTrue(resultPage.getMoreResults());
 			Assert.assertNotNull(resultPage.getLastEvaluatedKey().get("comment_id"));
+			Assert.assertNotNull(resultPage.getLastEvaluatedKey().get("created_by"));
+			Assert.assertNotNull(resultPage.getLastEvaluatedKey().get("time_stamp"));
 			
 			// Attempt to retrieve the remaining ChatterComments to satisfy query
 			// Should only be 10 instances
+			String lastEvalId = resultPage.getLastEvaluatedKey().get("comment_id").getS();
+			String lastCreator = resultPage.getLastEvaluatedKey().get("created_by").getS();
+			String lastTS = resultPage.getLastEvaluatedKey().get("time_stamp").getN();
+			
 			CommentResultPage remResults = dao.queryByCreator(
 					this.generateQueryByCreatorArgs("dbservice", 
-							resultPage.getLastEvaluatedKey().get("comment_id").getS()));
+							lastEvalId, lastCreator, lastTS));
 			Assert.assertNotNull(remResults);
 			Assert.assertNotNull(remResults.getPageResults());
 			Assert.assertTrue(remResults.getPageResults().size() == 10);
@@ -503,7 +530,7 @@ public class ChatterCommentDAOTest {
 			
 			// Attempt to query the ChatterComment table
 			CommentResultPage results = dao.queryByForum(this.generateQueryByForumArgs(
-					"1234-TEST", null));
+					"1234-TEST", null, null));
 			Assert.assertNotNull(results);
 			Assert.assertNotNull(results.getPageResults());
 			Assert.assertTrue(results.getPageResults().size() == 30);
@@ -511,11 +538,14 @@ public class ChatterCommentDAOTest {
 			Assert.assertNotNull(results.getLastEvaluatedKey());
 			Assert.assertTrue(results.getMoreResults());
 			Assert.assertNotNull(results.getLastEvaluatedKey().get("comment_id"));
+			Assert.assertNotNull(results.getLastEvaluatedKey().get("forum_id"));
 			
 			// Attempt to retrieve the remaining results to satisfy query
+			String lastEvalId = results.getLastEvaluatedKey().get("comment_id").getS();
+			String lastForum = results.getLastEvaluatedKey().get("forum_id").getS();
+			
 			CommentResultPage remResults = dao.queryByForum(
-					this.generateQueryByForumArgs("1234-TEST", 
-							results.getLastEvaluatedKey().get("comment_id").getS()));
+					this.generateQueryByForumArgs("1234-TEST", lastEvalId, lastForum));
 			Assert.assertNotNull(remResults);
 			Assert.assertNotNull(remResults.getPageResults());
 			Assert.assertTrue(remResults.getPageResults().size() == 10);
@@ -561,6 +591,7 @@ public class ChatterCommentDAOTest {
 				Assert.assertFalse(comment.getCommentId().isEmpty());
 				commentIds.add(comment.getCommentId());
 			}
+			Assert.assertEquals(40, commentIds.size());
 			
 			// Attempt to retrieve batch of ChatterComment instances
 			List<ChatterComment> retComments = dao.batchRetrieve(
@@ -575,6 +606,9 @@ public class ChatterCommentDAOTest {
 		}
 		catch (RequestValidationException rve) {
 			rve.printStackTrace();
+		}
+		catch (PropertyRetrievalException pre) {
+			pre.printStackTrace();
 		}
 		catch (AmazonClientException ace) {
 			ace.printStackTrace();

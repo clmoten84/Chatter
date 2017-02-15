@@ -13,6 +13,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.QueryResultPage;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
+import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.chatter.dbservice.dao.ForumDAO;
 import com.chatter.dbservice.exceptions.RequestValidationException;
 import com.chatter.dbservice.model.ChatterForum;
@@ -216,20 +218,43 @@ public class ForumDAOImpl implements ForumDAO{
 		
 		ForumResultPage forumResultPage = null;
 		QueryResultPage<ChatterForum> resultPage = null;
+		Condition sortKeyCond = null;
 		
 		String creator = (String) req.getArgs().get("createdBy");
-		//Long timeStampFrom = req.getTimeStampFrom();
-		//Long timeStampTo = req.getTimeStampTo();
-		String exclusiveStartVal = (String) req.getArgs().get("exclusiveStartVal");
+		String timeStampFrom = (String) req.getArgs().get("timeStampFrom");
+		String timeStampTo = (String) req.getArgs().get("timeStampTo");
+		String exclusiveStartId = (String) req.getArgs().get("exclusiveStartId");
+		String exclusiveStartCreator = (String) req.getArgs().get("exclusiveStartCreator");
+		String exclusiveStartTimeStamp = (String) req.getArgs().get("exclusiveStartTimeStamp");
 		Map<String, AttributeValue> exclusiveStartKey = null;
 		
-		if (exclusiveStartVal != null && !exclusiveStartVal.isEmpty()) {
+		// Check to see if an exclusive start value was included in request
+		if (exclusiveStartId != null && !exclusiveStartId.isEmpty()
+				&& exclusiveStartCreator != null && !exclusiveStartCreator.isEmpty()
+				&& exclusiveStartTimeStamp != null && !exclusiveStartTimeStamp.isEmpty()) {
+			
 			// Need to create an attribute value and exclusiveStartKey
-			AttributeValue attVal = new AttributeValue();
-			attVal.setS(exclusiveStartVal);
+			AttributeValue forumIdAtt = new AttributeValue();
+			forumIdAtt.setS(exclusiveStartId);
+			
+			AttributeValue creatorAtt = new AttributeValue();
+			creatorAtt.setS(exclusiveStartCreator);
+			
+			AttributeValue timeStampAtt = new AttributeValue();
+			timeStampAtt.setN(exclusiveStartTimeStamp);
 			
 			exclusiveStartKey = new HashMap<>();
-			exclusiveStartKey.put("forum_id", attVal);
+			exclusiveStartKey.put("forum_id", forumIdAtt);
+			exclusiveStartKey.put("created_by", creatorAtt);
+			exclusiveStartKey.put("time_stamp", timeStampAtt);
+		}
+		
+		// Check to see if sort key values were included in request
+		if (timeStampFrom != null && timeStampTo != null) {
+			sortKeyCond = new Condition()
+				.withComparisonOperator(ComparisonOperator.BETWEEN.toString())
+				.withAttributeValueList(new AttributeValue().withN(timeStampFrom), 
+						new AttributeValue().withN(timeStampTo));
 		}
 		
 		ChatterForum forum = new ChatterForum();
@@ -242,7 +267,12 @@ public class ForumDAOImpl implements ForumDAO{
 		query.setLimit(Integer.parseInt(propsResolver.getProperty("queryLimit")));
 		query.setConsistentRead(false);
 		
-		//TODO: Need to set global index range key condition here...
+		// Set index range key condition if applicable
+		if (sortKeyCond != null) {
+			Map<String, Condition> cond = new HashMap<>();
+			cond.put("time_stamp", sortKeyCond);
+			query.setRangeKeyConditions(cond);
+		}
 		
 		//Set exclusive start key
 		if (exclusiveStartKey != null) {
@@ -280,16 +310,25 @@ public class ForumDAOImpl implements ForumDAO{
 		ForumResultPage forumResultPage = null;
 		QueryResultPage<ChatterForum> queryResultPage = null;
 		String title = (String) req.getArgs().get("title");
-		String exclusiveStartVal = (String) req.getArgs().get("exclusiveStartVal");
+		String exclusiveStartId = (String) req.getArgs().get("exclusiveStartId");
+		String exclusiveStartTitle = (String) req.getArgs().get("exclusiveStartTitle");
 		Map<String, AttributeValue> exclusiveStartKey = null;
 		
-		if (exclusiveStartVal != null && !exclusiveStartVal.isEmpty()) {
-			// Need to create an attribute value and exclusive start key
-			AttributeValue attVal = new AttributeValue();
-			attVal.setS(exclusiveStartVal);
+		// Check if exclusive start values are in request
+		if (exclusiveStartId != null && !exclusiveStartId.isEmpty()
+				&& exclusiveStartTitle != null && !exclusiveStartTitle.isEmpty()) {
+			
+			// ID AttributeValue
+			AttributeValue idAttVal = new AttributeValue();
+			idAttVal.setS(exclusiveStartId);
+			
+			// Title AttributeValue
+			AttributeValue titleAttVal = new AttributeValue();
+			titleAttVal.setS(exclusiveStartTitle);
 			
 			exclusiveStartKey = new HashMap<>();
-			exclusiveStartKey.put("forum_id", attVal);
+			exclusiveStartKey.put("forum_id", idAttVal);
+			exclusiveStartKey.put("title", titleAttVal);
 		}
 		
 		ChatterForum forum = new ChatterForum();

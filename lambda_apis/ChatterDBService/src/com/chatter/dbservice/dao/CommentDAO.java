@@ -31,7 +31,7 @@ public interface CommentDAO {
 	 */
 	public ChatterComment createComment(CommentCRUDRequest request) throws
 		AmazonServiceException, AmazonClientException,
-			RequestValidationException;
+			RequestValidationException, PropertyRetrievalException;
 	
 	/**
 	 * Retrieve a ChatterComment object from the database using

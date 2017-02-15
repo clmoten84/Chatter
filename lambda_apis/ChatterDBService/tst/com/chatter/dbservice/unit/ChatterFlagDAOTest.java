@@ -145,7 +145,7 @@ public class ChatterFlagDAOTest {
 		// Generate map of custom args
 		Map<String, String> args = new HashMap<>();
 		args.put("flagId", flagId);
-		args.put("flagDescription", "Updated Chatter Flag description!");
+		args.put("flagDescriptionUpdate", "Updated Chatter Flag description!");
 		
 		request.setArgs(args);
 		return request;

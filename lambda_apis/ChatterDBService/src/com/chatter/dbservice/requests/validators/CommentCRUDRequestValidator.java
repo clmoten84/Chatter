@@ -1,6 +1,6 @@
 package com.chatter.dbservice.requests.validators;
 
-import java.util.Set;
+import java.util.List;
 
 import com.chatter.dbservice.exceptions.RequestValidationException;
 import com.chatter.dbservice.requests.CommentCRUDRequest;
@@ -202,7 +202,7 @@ public class CommentCRUDRequestValidator {
 		if (req != null) {
 			if (req.getArgs() != null) {
 				try {
-					Set<String> commentIds = (Set<String>) req.getArgs().get("commentIds");
+					List<String> commentIds = (List<String>) req.getArgs().get("commentIds");
 					
 					if (commentIds == null || commentIds.isEmpty())
 						validReq = false;
