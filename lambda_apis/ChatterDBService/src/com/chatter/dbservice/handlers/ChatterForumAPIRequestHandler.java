@@ -19,7 +19,7 @@ import com.chatter.dbservice.util.ServiceMessages;
 import com.chatter.dbservice.responses.ForumResultPage;
 import com.chatter.dbservice.responses.ServicePropsResponse;
 
-public class ChatterForumDBRequestHandler implements 
+public class ChatterForumAPIRequestHandler implements 
 		RequestHandler<ForumCRUDRequest, ServiceResponse<? extends Object>> {
 
 	// Data access object

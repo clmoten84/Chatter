@@ -21,7 +21,7 @@ import com.chatter.dbservice.responses.ServiceResponse;
 import com.chatter.dbservice.util.ServiceMessages;
 import com.chatter.dbservice.util.ops.ChatterCommentOps;
 
-public class ChatterCommentDBRequestHandler implements 
+public class ChatterCommentAPIRequestHandler implements 
 	RequestHandler<CommentCRUDRequest, ServiceResponse<? extends Object>> {
 
 	// Data access object

@@ -20,7 +20,7 @@ import com.chatter.dbservice.util.ops.ChatterFlagOps;
 import com.chatter.dbservice.model.ChatterFlag;
 import com.chatter.dbservice.responses.ServicePropsResponse;
 
-public class ChatterFlagDBRequestHandler implements 
+public class ChatterFlagAPIRequestHandler implements 
 		RequestHandler<FlagCRUDRequest, ServiceResponse<? extends Object>> {
 	
 	// Data access object
