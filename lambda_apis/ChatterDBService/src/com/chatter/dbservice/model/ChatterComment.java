@@ -8,7 +8,6 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import com.amazonaws.services.dynamodbv2.datamodeling.S3Link;
 
 /**
  * ChatterComment
@@ -36,7 +35,8 @@ public class ChatterComment {
 	private Set<String> replyIds;
 	private Set<String> flagIds;
 	private int concurCnt;
-	private S3Link audioFileLink;
+	private String s3BucketName;
+	private String s3KeyName;
 	
 	public ChatterComment() { }
 
@@ -103,14 +103,23 @@ public class ChatterComment {
 	public void setConcurCnt(int concurCnt) {
 		this.concurCnt = concurCnt;
 	}
-
-	@DynamoDBAttribute(attributeName = "audio_file_url")
-	public S3Link getAudioFileLink() {
-		return audioFileLink;
+	
+	@DynamoDBAttribute(attributeName = "s3_bucket")
+	public String getS3BucketName() {
+		return s3BucketName;
 	}
-
-	public void setAudioFileLink(S3Link audioFileLink) {
-		this.audioFileLink = audioFileLink;
+	
+	public void setS3BucketName(String s3BucketName) {
+		this.s3BucketName = s3BucketName;
+	}
+	
+	@DynamoDBAttribute(attributeName = "s3_key")
+	public String getS3KeyName() {
+		return s3KeyName;
+	}
+	
+	public void setS3KeyName(String s3KeyName) {
+		this.s3KeyName = s3KeyName;
 	}
 	
 	@Override
@@ -124,7 +133,8 @@ public class ChatterComment {
 			.append("\nreply_cnt: ").append(this.replyIds.size())
 			.append("\nflag_cnt: ").append(this.flagIds.size())
 			.append("\nconcur_cnt: ").append(this.concurCnt)
-			.append("\naudio_file_url: ").append(this.audioFileLink.getUrl().getFile())
+			.append("\nS3 Bucket: ").append(this.s3BucketName)
+			.append("\nS3 Key: ").append(this.s3KeyName)
 			.toString();
 	}
 }

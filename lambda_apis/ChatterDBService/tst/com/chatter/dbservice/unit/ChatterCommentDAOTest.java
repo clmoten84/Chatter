@@ -52,61 +52,28 @@ public class ChatterCommentDAOTest {
 		return dao;
 	}
 	
-	/**
-	 * Initialize a test ChatterComment instance
-	 * @return
-	 */
-	private ChatterComment createTestComment() {
-		ChatterComment comment = new ChatterComment();
-		comment.setCreatedBy("dbservice");
-		comment.setAudioFileLink(null);
-		comment.setConcurCnt(0);
-		comment.setFlagIds(null);
-		comment.setForumId("1234-TEST");
-		comment.setReplyIds(null);
-		comment.setTimeStamp(new Date().getTime());
-		return comment;
-	}
-	
-	/**
-	 * Initialize a list of 40 ChatterComment instances
-	 * @return
-	 */
-	private List<ChatterComment> createTestComments() {
-		List<ChatterComment> comments = new ArrayList<>();
-		for (int i = 0; i < 40; i++) {
-			ChatterComment comment = new ChatterComment();
-			comment.setCreatedBy("dbservice");
-			comment.setAudioFileLink(null);
-			comment.setConcurCnt(0);
-			comment.setFlagIds(null);
-			comment.setForumId("1234-TEST");
-			comment.setReplyIds(null);
-			comment.setTimeStamp(new Date().getTime());
-			comments.add(comment);
-		}
-		return comments;
-	}
-	
 	/* ********** DAO Argument Creation ********** */
-	
 	/**
-	 * Generate arguments for creating and saving a new ChatterComment instance
-	 * to the DB.
-	 * @param commentIn
+	 * Generate a request to create and save a new ChatterComment to the
+	 * DB.
+	 * @param createdBy
+	 * @param forumId
+	 * @param bucketName
+	 * @param fileName
 	 * @return
 	 */
-	private CommentCRUDRequest generateCreateArgs(ChatterComment commentIn) {
+	private CommentCRUDRequest createCommentRequest(String createdBy, String forumId,
+			String bucketName, String fileName) {
 		CommentCRUDRequest request = new CommentCRUDRequest();
 		request.setOperation(ChatterCommentOps.CREATE);
 		request.setReqDate(new Date().getTime());
 		
 		// Map of custom args
 		Map<String, String> args = new HashMap<>();
-		args.put("createdBy", commentIn.getCreatedBy());
-		args.put("forumId", commentIn.getForumId());
-		args.put("bucketName", "dbservice-test-bucket");
-		args.put("fileName", "test_file.mp4");
+		args.put("createdBy", createdBy);
+		args.put("forumId", forumId);
+		args.put("bucketName", bucketName);
+		args.put("fileName", fileName);
 		request.setArgs(args);
 		
 		return request;
@@ -316,8 +283,8 @@ public class ChatterCommentDAOTest {
 		CommentDAO dao = this.getDAO();
 		
 		try {
-			ChatterComment comment = dao.createComment(this.generateCreateArgs(
-					this.createTestComment()));
+			ChatterComment comment = dao.createComment(this.createCommentRequest("dbservice", 
+					"1234-TEST", "dbservice-test-bucket", "aTest.txt"));
 			
 			Assert.assertNotNull(comment);
 			Assert.assertNotNull(comment.getCommentId());
@@ -351,8 +318,8 @@ public class ChatterCommentDAOTest {
 		
 		try {
 			/* ********** SET UP *********** */
-			ChatterComment comment = dao.createComment(this.generateCreateArgs(
-					this.createTestComment()));
+			ChatterComment comment = dao.createComment(this.createCommentRequest("dbservice", 
+					"1234-TEST", "dbservice-test-bucket", "aTest.txt"));
 			Assert.assertNotNull(comment);
 			
 			// Attempt to retrieve the newly saved comment from DB
@@ -385,8 +352,8 @@ public class ChatterCommentDAOTest {
 		
 		try {
 			/* ********** SET UP ********** */
-			ChatterComment comment = dao.createComment(this.generateCreateArgs(
-					this.createTestComment()));
+			ChatterComment comment = dao.createComment(this.createCommentRequest("dbservice", 
+					"1234-TEST", "dbservice-test-bucket", "aTest.txt"));
 			Assert.assertNotNull(comment);
 			
 			// Attempt to add reply to comment
@@ -452,8 +419,9 @@ public class ChatterCommentDAOTest {
 		try {
 			/* ********** SET UP ********** */
 			List<String> commentIds = new ArrayList<>();
-			for (ChatterComment comment : this.createTestComments()) {
-				comment = dao.createComment(this.generateCreateArgs(comment));
+			for (int i=0; i < 40; i++) {
+				ChatterComment comment = dao.createComment(this.createCommentRequest(
+						"dbservice", "1234-TEST", "dbservice-test-bucket", "aTest.txt"));
 				Assert.assertNotNull(comment);
 				Assert.assertNotNull(comment.getCommentId());
 				Assert.assertFalse(comment.getCommentId().isEmpty());
@@ -520,13 +488,15 @@ public class ChatterCommentDAOTest {
 		try {
 			/* ********** SET UP ********** */
 			List<String> commentIds = new ArrayList<>();
-			for (ChatterComment comment : this.createTestComments()) {
-				comment = dao.createComment(this.generateCreateArgs(comment));
+			for (int i=0; i < 40; i++) {
+				ChatterComment comment = dao.createComment(this.createCommentRequest(
+						"dbservice", "1234-TEST", "dbservice-test-bucket", "aTest.txt"));
 				Assert.assertNotNull(comment);
 				Assert.assertNotNull(comment.getCommentId());
 				Assert.assertFalse(comment.getCommentId().isEmpty());
 				commentIds.add(comment.getCommentId());
 			}
+			Assert.assertTrue(commentIds.size() == 40);
 			
 			// Attempt to query the ChatterComment table
 			CommentResultPage results = dao.queryByForum(this.generateQueryByForumArgs(
@@ -584,8 +554,9 @@ public class ChatterCommentDAOTest {
 		try {
 			/* ********** SET UP ********** */
 			List<String> commentIds = new ArrayList<>();
-			for (ChatterComment comment : this.createTestComments()) {
-				comment = dao.createComment(this.generateCreateArgs(comment));
+			for (int i=0; i < 40; i++) {
+				ChatterComment comment = dao.createComment(this.createCommentRequest(
+						"dbservice", "1234-TEST", "dbservice-test-bucket", "aTest.txt"));
 				Assert.assertNotNull(comment);
 				Assert.assertNotNull(comment.getCommentId());
 				Assert.assertFalse(comment.getCommentId().isEmpty());

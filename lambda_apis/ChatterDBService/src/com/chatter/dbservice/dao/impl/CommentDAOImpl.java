@@ -10,6 +10,7 @@ import java.util.Set;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
@@ -42,25 +43,31 @@ public class CommentDAOImpl implements CommentDAO{
 	private AmazonDynamoDBClient dbClient;
 	private PropertiesResolver propsResolver;
 	private DynamoDBMapper dbMapper;
+	private String dbEndpoint;
+	private String env;
 	
 	public CommentDAOImpl() throws PropertyRetrievalException {
 		// Initialize properties resolver instance
 		this.propsResolver = new PropertiesResolver("service.properties");
+		this.env = this.propsResolver.getProperty("service.env");
+		this.dbEndpoint = this.propsResolver.getProperty("aws.dynamodb.endpoint");
 		
 		// Initialize DynamoDB client instance
 		// If the execution environment is local use the 
 		// ProfileCredentialsProvider so that the client can
 		// find AWS credentials in the local environment. Otherwise
-		// use the default provider chain.
-		if (this.propsResolver.getProperty("service.env").equalsIgnoreCase("local")) {
+		// use the Environment credentials provider.
+		if (this.env.equalsIgnoreCase("local")) {
 			this.dbClient = new AmazonDynamoDBClient(new ProfileCredentialsProvider());
-			this.dbClient.setEndpoint(propsResolver.getProperty("aws.dynamodb.endpoint"));
+			this.dbClient.setEndpoint(this.dbEndpoint);
 			this.dbMapper = new DynamoDBMapper(dbClient, new ProfileCredentialsProvider());
 		}
 		else {
-			this.dbClient = new AmazonDynamoDBClient();
-			this.dbClient.setEndpoint(propsResolver.getProperty("aws.dynamodb.endpoint"));
-			this.dbMapper = new DynamoDBMapper(dbClient);
+			this.dbClient = new AmazonDynamoDBClient(new 
+					EnvironmentVariableCredentialsProvider());
+			this.dbClient.setEndpoint(this.dbEndpoint);
+			this.dbMapper = new DynamoDBMapper(dbClient, 
+					new EnvironmentVariableCredentialsProvider());
 		}
 	}
 
@@ -83,9 +90,8 @@ public class CommentDAOImpl implements CommentDAO{
 		comment.setReplyIds(null);
 		comment.setFlagIds(null);
 		comment.setConcurCnt(0);
-		comment.setAudioFileLink(dbMapper.createS3Link(
-				(String) request.getArgs().get("bucketName"), 
-				(String) request.getArgs().get("fileName")));
+		comment.setS3BucketName((String) request.getArgs().get("bucketName"));
+		comment.setS3KeyName((String) request.getArgs().get("fileName"));
 		
 		// Save comment to DB
 		dbMapper.save(comment);
