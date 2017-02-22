@@ -61,7 +61,9 @@ public class ChatterFlagAPIRequestHandler implements
     				case BATCH_DELETE:
     					return this.batchDeleteFlag(input, context);
     				case PING:
-    					return this.pingService(input, context);
+    					return this.pingService();
+    				case SERVICE_INFO:
+    					return this.getServiceInfo(input, context);
     				default:
     					throw new UnsupportedOperationException("ERROR: Chatter Flag data "
     							+ "request contains unsupported operation: " + op.toString());
@@ -315,7 +317,7 @@ public class ChatterFlagAPIRequestHandler implements
      * @return FlagServiceResponse
      * @throws PropertyRetrievalException
      */
-    public ServiceResponse<ServicePropsResponse> pingService(FlagCRUDRequest request, 
+    public ServiceResponse<ServicePropsResponse> getServiceInfo(FlagCRUDRequest request, 
     		Context context) throws PropertyRetrievalException {
     	
     	ServiceResponse<ServicePropsResponse> response = new ServiceResponse<>();
@@ -324,6 +326,20 @@ public class ChatterFlagAPIRequestHandler implements
     	context.getLogger().log(request.toString());
     	
     	response.setPayload(dao.getServiceProperties());
+    	response.setStatus(true);
+    	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
+    	return response;
+    }
+    
+    /**
+     * Pings service with empty request.
+     * @return
+     */
+    public ServiceResponse<String> pingService() {
+    	ServiceResponse<String> response = new ServiceResponse<>();
+    	response.setPayload("Ping received!");
     	response.setStatus(true);
     	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
     	response.setExceptionThrown(false);

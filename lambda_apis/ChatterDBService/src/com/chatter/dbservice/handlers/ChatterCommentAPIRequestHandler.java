@@ -66,7 +66,7 @@ public class ChatterCommentAPIRequestHandler implements
 						case INCREMENT_CONCUR:
 							return this.updateComment(input, context);
 						case PING:
-							return this.pingService(input, context);
+							return this.pingService();
 						case QUERY_BY_CREATOR:
 							return this.queryByCreator(input, context);
 						case QUERY_BY_FORUM:
@@ -75,6 +75,8 @@ public class ChatterCommentAPIRequestHandler implements
 							return this.updateComment(input, context);
 						case REMOVE_REPLY:
 							return this.updateComment(input, context);
+						case SERVICE_INFO:
+							return this.getServiceInfo(input, context);
 						default:
 							throw new UnsupportedOperationException("ERROR: Chatter Comment "
 									+ "data request contained an unsupported operation: "
@@ -377,13 +379,13 @@ public class ChatterCommentAPIRequestHandler implements
     }
     
     /**
-     * Pings service and retrieves service metadata
+     * Retrieves service metadata
      * @param request the request to process
      * @param context the request context
      * @return
      * @throws PropertyRetrievalException
      */
-    public ServiceResponse<ServicePropsResponse> pingService(CommentCRUDRequest request,
+    public ServiceResponse<ServicePropsResponse> getServiceInfo(CommentCRUDRequest request,
     		Context context) throws PropertyRetrievalException {
     	
     	ServiceResponse<ServicePropsResponse> response = new ServiceResponse<>();
@@ -392,6 +394,20 @@ public class ChatterCommentAPIRequestHandler implements
     	logger.log(request.toString());
     	
     	response.setPayload(this.dao.getServiceProperties());
+    	response.setStatus(true);
+    	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
+    	return response;
+    }
+    
+    /**
+     * Pings service with empty request.
+     * @return
+     */
+    public ServiceResponse<String> pingService() {
+    	ServiceResponse<String> response = new ServiceResponse<>();
+    	response.setPayload("Ping received!");
     	response.setStatus(true);
     	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
     	response.setExceptionThrown(false);

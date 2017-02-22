@@ -61,7 +61,9 @@ public class ChatterForumAPIRequestHandler implements
 					case UPDATE:
 						return this.updateForum(input, context);
 					case PING:
-						return this.pingService(input, context);
+						return this.pingService();
+					case SERVICE_INFO:
+						return this.getServiceInfo(input, context);
 					default:
 						throw new UnsupportedOperationException("ERROR: Chatter Forum data "
 								+ "request contains unsupported operation: " + op.toString());
@@ -396,7 +398,7 @@ public class ChatterForumAPIRequestHandler implements
      * @return a ForumServiceResponse
      * @throws PropertyRetrievalException 
      */
-    public ServiceResponse<ServicePropsResponse> pingService(ForumCRUDRequest request, 
+    public ServiceResponse<ServicePropsResponse> getServiceInfo(ForumCRUDRequest request, 
     		Context context) throws PropertyRetrievalException {
     	
     	ServiceResponse<ServicePropsResponse> response = new ServiceResponse<>();
@@ -410,6 +412,20 @@ public class ChatterForumAPIRequestHandler implements
     	response.setExceptionThrown(false);
     	response.setExceptionMessage(null);
     	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	return response;
+    }
+    
+    /**
+     * Pings service with empty request.
+     * @return
+     */
+    public ServiceResponse<String> pingService() {
+    	ServiceResponse<String> response = new ServiceResponse<>();
+    	response.setPayload("Ping received!");
+    	response.setStatus(true);
+    	response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
+    	response.setExceptionThrown(false);
+    	response.setExceptionMessage(null);
     	return response;
     }
     

@@ -9,5 +9,5 @@ package com.chatter.dbservice.util.ops;
  */
 public enum ChatterFlagOps {
 	CREATE, RETRIEVE, BATCH_RETRIEVE, UPDATE, DELETE,
-	BATCH_DELETE, PING
+	BATCH_DELETE, PING, SERVICE_INFO
 }
