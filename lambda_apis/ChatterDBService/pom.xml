@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>ChatterDBService</groupId>
   <artifactId>ChatterDBService</artifactId>
-  <version>0.0.2-SNAPSHOT</version>
+  <version>0.0.3-SNAPSHOT</version>
   <name>ChatterDBService</name>
   <description>Service for CRUDing Chatter data to the database</description>
   
