@@ -13,15 +13,48 @@
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
-      </plugin>
+    	<plugin>
+    		<groupId>org.apache.maven.plugins</groupId>
+    		<artifactId>maven-resources-plugin</artifactId>
+    		<version>3.0.1</version>
+    		<configuration>
+    			<encoding>UTF-8</encoding>
+    		</configuration>
+    	</plugin>
+      	<plugin>
+        	<artifactId>maven-compiler-plugin</artifactId>
+        	<version>3.1</version>
+        	<configuration>
+          		<source>1.8</source>
+          		<target>1.8</target>
+        	</configuration>
+      	</plugin>
+      	<plugin>
+      		<groupId>org.apache.maven.plugins</groupId>
+      		<artifactId>maven-shade-plugin</artifactId>
+      		<version>2.4.3</version>
+      		<configuration>
+      			<createDependencyReducedPom>false</createDependencyReducedPom>
+      		</configuration>
+      		<executions>
+      			<execution>
+      				<phase>package</phase>
+      				<goals>
+      					<goal>shade</goal>
+      				</goals>
+      			</execution>
+      		</executions>
+      	</plugin>
     </plugins>
+    <filters>
+    	<filter>env_props/${env}.properties</filter>
+    </filters>
+    <resources>
+    	<resource>
+    		<directory>service_props</directory>
+    		<filtering>true</filtering>
+    	</resource>
+    </resources>
   </build>
   
   <!-- Dependency configuration -->
@@ -64,4 +97,21 @@
   </dependencies>
   
   <!-- Profile configuration -->
+  <profiles>
+  	<!-- Development environment profile -->
+  	<profile>
+  		<id>env-dev</id>
+  		<properties>
+  			<env>env-dev</env>
+  		</properties>
+  	</profile>
+  	
+  	<!-- Production environment profile -->
+  	<profile>
+  		<id>env-prod</id>
+  		<properties>
+  			<env>env-prod</env>
+  		</properties>
+  	</profile>
+  </profiles>
 </project>
