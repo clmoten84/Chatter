@@ -6,7 +6,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.chatter.fileservice.handlers.LambdaFunctionHandler;
+import com.chatter.fileservice.handlers.ChatterFileAPIRequestHandler;
 
 /**
  * A simple test harness for locally invoking your Lambda function handler.
@@ -30,9 +30,9 @@ public class LambdaFunctionHandlerTest {
         return ctx;
     }
 
-    @Test
+    /*@Test
     public void testLambdaFunctionHandler() {
-        LambdaFunctionHandler handler = new LambdaFunctionHandler();
+        ChatterFileAPIRequestHandler handler = new ChatterFileAPIRequestHandler();
         Context ctx = createContext();
 
         Object output = handler.handleRequest(input, ctx);
@@ -41,5 +41,5 @@ public class LambdaFunctionHandlerTest {
         if (output != null) {
             System.out.println(output.toString());
         }
-    }
+    }*/
 }

@@ -17,14 +17,16 @@ public class ServiceRequest {
 	private ServiceOps operation;
 	private Long reqDate;
 	private Map<String, ?> args;
+	private byte[] fileData;
 	
 	public ServiceRequest() { }
 	
 	public ServiceRequest(ServiceOps operation, Long reqDate, 
-			Map<String, ?> args) {
+			Map<String, ?> args, byte[] fileData) {
 		this.operation = operation;
 		this.reqDate = reqDate;
 		this.args = args;
+		this.fileData = fileData;
 	}
 
 	public ServiceOps getOperation() {
@@ -51,6 +53,14 @@ public class ServiceRequest {
 		this.args = args;
 	}
 	
+	public byte[] getFileData() {
+		return fileData;
+	}
+	
+	public void setFileData(byte[] fileData) {
+		this.fileData = fileData;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -66,6 +76,13 @@ public class ServiceRequest {
 		}
 		else {
 			builder.append("\n\tNo args found in request...");
+		}
+		
+		if (this.fileData != null) {
+			builder.append("\n\tFile Data size: ").append(this.fileData.length);
+		}
+		else {
+			builder.append("\n\tNo file data included in request...");
 		}
 		return builder.toString();
 	}
