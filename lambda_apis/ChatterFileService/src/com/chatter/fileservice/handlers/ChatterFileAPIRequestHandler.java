@@ -1,21 +1,14 @@
 package com.chatter.fileservice.handlers;
 
-import java.io.ByteArrayInputStream;
-
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.chatter.fileservice.exceptions.MissingOperationException;
 import com.chatter.fileservice.exceptions.PropertyRetrievalException;
 import com.chatter.fileservice.exceptions.RequestValidationException;
+import com.chatter.fileservice.fao.FileAccessObject;
+import com.chatter.fileservice.fao.FileAccessObjectImpl;
 import com.chatter.fileservice.requests.ServiceRequest;
 import com.chatter.fileservice.requests.ServiceRequestValidator;
 import com.chatter.fileservice.responses.FileMetadata;
@@ -27,6 +20,8 @@ import com.chatter.fileservice.util.ServiceOps;
 
 public class ChatterFileAPIRequestHandler implements 
 	RequestHandler<ServiceRequest, ServiceResponse<? extends Object>> {
+	
+	private FileAccessObject fao;
 	
     @Override
     public ServiceResponse<? extends Object> handleRequest(ServiceRequest input, 
@@ -40,6 +35,9 @@ public class ChatterFileAPIRequestHandler implements
     		ServiceResponse<Void> response;
     		
     		try {
+    			// Initialize fao object
+    			fao = new FileAccessObjectImpl();
+    			
     			// Retrieve operation in request
     			ServiceOps operation = input.getOperation();
     			if (operation != null) {
@@ -137,7 +135,8 @@ public class ChatterFileAPIRequestHandler implements
      * @throws RequestValidationException
      */
     private ServiceResponse<FileMetadata> saveFile(ServiceRequest req, Context ctx) 
-    	throws RequestValidationException, PropertyRetrievalException {
+    	throws RequestValidationException, PropertyRetrievalException,
+    		AmazonClientException {
     	
     	// Ensure request passes service validation
     	ServiceRequestValidator.validateCreateCommentRequest(req);
@@ -145,47 +144,14 @@ public class ChatterFileAPIRequestHandler implements
     	// Log request data
     	ctx.getLogger().log(req.toString());
     	
-    	// Create S3 client object
-    	AmazonS3Client s3Client = this.getStorageClient();
+    	// Execute save operation
+    	FileMetadata fileMetadata = this.fao.saveFile(req);
+    	
+    	// Generate response and return
     	ServiceResponse<FileMetadata> response = new ServiceResponse<>();
     	
-    	// Generate metadata object from arguments in request
-    	ObjectMetadata metadata = new ObjectMetadata();
-    	metadata.addUserMetadata("createdBy", (String) req.getArgs().get("createdBy"));
-    	metadata.addUserMetadata("bucketName", (String) req.getArgs().get("bucketName"));
-    	metadata.addUserMetadata("keyName", (String) req.getArgs().get("keyName"));
-    	metadata.addUserMetadata("dateCreated", (String) req.getArgs().get("dateCreated"));
-
-    	if (req.getArgs().containsKey("commentId")) {
-    		metadata.addUserMetadata("commentId", (String) req.getArgs().get("commentId"));
-    	}
-    	
-    	if (req.getArgs().containsKey("forumId")) {
-    		metadata.addUserMetadata("forumId", (String) req.getArgs().get("forumId"));
-    	}
-    	
-    	// Create put object request and execute operation
-    	PutObjectRequest putReq = new PutObjectRequest(
-			(String) req.getArgs().get("bucketName"),
-			(String) req.getArgs().get("keyName"),
-			new ByteArrayInputStream(req.getFileData()),
-			metadata
-    	);
-    	
-    	PutObjectResult result = s3Client.putObject(putReq);
-    	
-    	if (result != null) {
-    		// Create FileMetadata response object
-    		FileMetadata resultMeta = new FileMetadata();
-    		
-    		if (result.getMetadata() != null) {
-    			resultMeta.seteTag(result.getETag());
-    			resultMeta.setContentLength(result.getMetadata().getContentLength());
-    			resultMeta.setContentType(result.getMetadata().getContentType());
-    			resultMeta.setUserMetadata(result.getMetadata().getUserMetadata());
-    		}
-    		
-    		response.setPayload(resultMeta);
+    	if (fileMetadata != null) {
+    		response.setPayload(fileMetadata);
     		response.setStatus(true);
     		response.setMessage(ServiceMessages.OPERATION_SUCCESS.toString());
     		response.setExceptionThrown(false);
@@ -193,7 +159,7 @@ public class ChatterFileAPIRequestHandler implements
     	}
     	else {
     		response.setPayload(null);
-    		response.setStatus(false);
+    		response.setStatus(true);
     		response.setMessage(ServiceMessages.OPERATION_FAILURE.toString());
     		response.setExceptionThrown(false);
     		response.setExceptionMessage(null);
@@ -210,7 +176,8 @@ public class ChatterFileAPIRequestHandler implements
      * @throws RequestValidationException
      */
     private ServiceResponse<Void> deleteFile(ServiceRequest req, Context ctx) 
-    	throws RequestValidationException, PropertyRetrievalException { 
+    	throws RequestValidationException, PropertyRetrievalException,
+    		AmazonClientException { 
     	
     	// Validate request
     	ServiceRequestValidator.validateDeleteRequest(req);
@@ -218,16 +185,9 @@ public class ChatterFileAPIRequestHandler implements
     	// Log request data
     	ctx.getLogger().log(req.toString());
     	
-    	// Create S3 client object
-    	AmazonS3Client s3Client = this.getStorageClient();
+    	// Execute delete operation
     	ServiceResponse<Void> response = new ServiceResponse<>();
-    	
-    	// Generate delete request and execute operation
-    	DeleteObjectRequest delReq = new DeleteObjectRequest(
-    		(String) req.getArgs().get("bucketName"),
-    		(String) req.getArgs().get("keyName")
-    	);
-    	s3Client.deleteObject(delReq);
+    	this.fao.deleteFile(req);
     	
     	response.setPayload(null);
     	response.setStatus(true);
@@ -278,26 +238,6 @@ public class ChatterFileAPIRequestHandler implements
     	response.setExceptionThrown(false);
     	response.setExceptionMessage(null);
     	return response;
-    }
-    
-    /**
-     * Create and return Amazon S3 client object
-     * @return
-     * @throws PropertyRetrievalException
-     */
-    private AmazonS3Client getStorageClient() throws PropertyRetrievalException {
-    	// Need to retrieve environment variable from properties file
-    	PropertiesResolver propsResolver = new PropertiesResolver("service.properties");
-    	String env = propsResolver.getProperty("service.env");
-    	AmazonS3Client s3Client;
-    	
-    	// Instantiate S3 client object
-    	if (env.equalsIgnoreCase("local")) {
-    		return new AmazonS3Client(new ProfileCredentialsProvider());
-    	}
-    	else {
-    		return new AmazonS3Client(new EnvironmentVariableCredentialsProvider());
-    	}
     }
     
     /**
