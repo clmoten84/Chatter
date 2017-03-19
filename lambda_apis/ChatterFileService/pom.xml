@@ -98,6 +98,13 @@
   
   <!-- Profile configuration -->
   <profiles>
+  	<!-- Local environment profile -->
+  	<profile>
+  		<id>env-local</id>
+  		<properties>
+  			<env>env-local</env>
+  		</properties>
+  	</profile>
   	<!-- Development environment profile -->
   	<profile>
   		<id>env-dev</id>

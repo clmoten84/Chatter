@@ -2,13 +2,15 @@ package com.chatter.fileservice.fao;
 
 import java.io.ByteArrayInputStream;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
+
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.chatter.fileservice.exceptions.PropertyRetrievalException;
 import com.chatter.fileservice.requests.ServiceRequest;
@@ -49,6 +51,12 @@ public class FileAccessObjectImpl implements FileAccessObject{
     	metadata.addUserMetadata("bucketName", (String) req.getArgs().get("bucketName"));
     	metadata.addUserMetadata("keyName", (String) req.getArgs().get("keyName"));
     	metadata.addUserMetadata("dateCreated", (String) req.getArgs().get("dateCreated"));
+    	metadata.setContentLength(Long.valueOf(req.getFileData().length));
+    	
+    	// Need to also set content md5 with base64 encoded raw MD5 byte array
+    	byte[] resultByte = DigestUtils.md5(req.getFileData());
+    	String md5 = new String(Base64.encodeBase64(resultByte));
+    	metadata.setContentMD5(md5);
 
     	if (req.getArgs().containsKey("commentId")) {
     		metadata.addUserMetadata("commentId", (String) req.getArgs().get("commentId"));
@@ -57,16 +65,12 @@ public class FileAccessObjectImpl implements FileAccessObject{
     	if (req.getArgs().containsKey("forumId")) {
     		metadata.addUserMetadata("forumId", (String) req.getArgs().get("forumId"));
     	}
-		
-    	// Create put object request and execute operation
-    	PutObjectRequest putReq = new PutObjectRequest(
-			(String) req.getArgs().get("bucketName"),
-			(String) req.getArgs().get("keyName"),
-			new ByteArrayInputStream(req.getFileData()),
-			metadata
-    	);
     	
-    	PutObjectResult result = this.s3Client.putObject(putReq);
+    	PutObjectResult result = this.s3Client.putObject(
+    			(String) req.getArgs().get("bucketName"),
+    			(String) req.getArgs().get("keyName"),
+    			new ByteArrayInputStream(req.getFileData()),
+    			metadata);
     	
     	if (result != null) {
     		fileMetadata = new FileMetadata();
